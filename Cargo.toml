@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.104"
 macroquad = "0.4.16"
+rand = "0.10.3"
 seahash = "4.1.0"

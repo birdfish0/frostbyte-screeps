@@ -1,4 +1,8 @@
-use std::{collections::HashMap, sync::{Mutex}};
+use std::{collections::HashMap, sync::Mutex};
+
+use rand::{RngExt, rngs::SmallRng};
+
+use crate::{consts, util};
 
 pub struct GameState {
     pub paused: bool,
@@ -8,7 +12,9 @@ pub struct GameState {
     pub creeps: Mutex<HashMap<u64, Creep>>,
     pub energy_sources: Mutex<HashMap<u64, EnergySource>>,
     pub mineral_sources: Mutex<HashMap<u64, MineralSource>>,
+    pub commodity_sources: Mutex<HashMap<u64, CommoditySource>>,
     pub structures: Mutex<HashMap<u64, Structure>>,
+    pub random: SmallRng,
 }
 
 pub struct Creep {
@@ -29,7 +35,7 @@ pub struct Creep {
 pub struct Room {
     pub posx: u8,
     pub posy: u8,
-    pub creeps: Vec<u64>, // IDs
+    pub creeps: Vec<u64>,              // IDs
     pub terrain: [u128; 50], // (rows) bitfield of terrain, 2 bits per tile, 0=plain, 1=wall, 2=swamp
     pub structures: Vec<u64>, // IDs
     pub energy_sources: Vec<u64>, // IDs
@@ -54,12 +60,94 @@ pub struct EnergySource {
 
 pub struct MineralSource {
     pub id: u64,
+    pub mineral_type: ResourceType,
     pub pos: RoomPos,
     pub amount: u32,
     pub refresh_timer: u128,
     pub density: MineralDensity,
 }
 
+impl MineralSource {
+    pub fn refresh(&mut self, game_state: &mut GameState) {
+        if self.density == MineralDensity::Low
+            || self.density == MineralDensity::Ultra
+            || game_state.random.random_ratio(consts::MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
+        {
+            self.density = match self.density {
+                MineralDensity::Low => util::random_choice(
+                    &mut game_state.random,
+                    &[
+                        MineralDensity::Medium,
+                        MineralDensity::High,
+                        MineralDensity::Ultra,
+                    ],
+                    &[
+                        consts::MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_HIGH_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
+                    ],
+                ),
+                MineralDensity::Medium => util::random_choice(
+                    &mut game_state.random,
+                    &[
+                        MineralDensity::Low,
+                        MineralDensity::High,
+                        MineralDensity::Ultra,
+                    ],
+                    &[
+                        consts::MINERAL_DENSITY_LOW_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_HIGH_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
+                    ],
+                ),
+                MineralDensity::High => util::random_choice(
+                    &mut game_state.random,
+                    &[
+                        MineralDensity::Low,
+                        MineralDensity::Medium,
+                        MineralDensity::Ultra,
+                    ],
+                    &[
+                        consts::MINERAL_DENSITY_LOW_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
+                    ],
+                ),
+                MineralDensity::Ultra => util::random_choice(
+                    &mut game_state.random,
+                    &[
+                        MineralDensity::Low,
+                        MineralDensity::Medium,
+                        MineralDensity::High,
+                    ],
+                    &[
+                        consts::MINERAL_DENSITY_LOW_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
+                        consts::MINERAL_DENSITY_HIGH_CHANCE_PER1000,
+                    ],
+                ),
+            }
+        }
+        self.amount = match self.density {
+            MineralDensity::Low => consts::MINERAL_DENSITY_LOW_VALUE,
+            MineralDensity::Medium => consts::MINERAL_DENSITY_MEDIUM_VALUE,
+            MineralDensity::High => consts::MINERAL_DENSITY_HIGH_VALUE,
+            MineralDensity::Ultra => consts::MINERAL_DENSITY_ULTRA_VALUE,
+        };
+        self.refresh_timer = game_state.tick + consts::MINERAL_REGEN_TIME as u128;
+    }
+}
+
+pub struct CommoditySource {
+    pub id: u64,
+    pub commodity_type: ResourceType,
+    pub pos: RoomPos,
+    pub amount: u32,
+    pub refresh_timer: u128,
+    pub density: MineralDensity,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum MineralDensity {
     Low,
     Medium,
@@ -73,6 +161,13 @@ pub struct Structure {
     pub pos: RoomPos,
     pub hits: u32,
     pub hits_max: u32,
+}
+
+pub struct ConstructionSite {
+    pub id: u64,
+    pub structure_type: StructureType,
+    pub pos: RoomPos,
+    pub energy: u64,
 }
 
 pub struct Store {
@@ -200,7 +295,7 @@ pub enum ResourceType {
     Extract,
     Spirit,
     Emanation,
-    Essence
+    Essence,
 }
 
 pub enum CreepPart {

@@ -5,6 +5,7 @@ use crate::util::RecursiveAvg;
 
 mod util;
 mod game;
+mod consts;
 
 fn window_conf() -> Conf {
     Conf {
