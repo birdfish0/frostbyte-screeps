@@ -16,7 +16,7 @@ fn window_conf() -> Conf {
          window_height: 800,
          ..Default::default()
      }
- }
+}
 
 #[macroquad::main(window_conf)]
 async fn main() {
