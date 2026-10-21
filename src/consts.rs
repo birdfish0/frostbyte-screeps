@@ -1,3 +1,9 @@
+use macroquad::color::Color;
+
+pub const WORLD_BG_COLOR: Color = Color::from_hex(0x1b1b1b);
+pub const UI_HIGH_BG_COLOR: Color = Color::from_hex(0x444444);
+pub const UI_LOW_BG_COLOR: Color = Color::from_hex(0x2d2d2d);
+
 pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 
 // In the game docs:
