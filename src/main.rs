@@ -12,6 +12,7 @@ fn window_conf() -> Conf {
     Conf {
          window_title: "Frostbyte Screeps Client".to_owned(),
          icon: Some(icon_from!("../assets/icon_big.bmp", "../assets/icon_med.bmp", "../assets/icon_small.bmp")),
+         high_dpi: true,
          ..Default::default()
      }
  }
