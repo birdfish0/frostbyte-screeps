@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 use std::time::{Instant};
 use std::thread;
 
-use crate::util::RecursiveVals;
+use crate::util::RecursiveAvg;
 
 mod util;
 mod game;

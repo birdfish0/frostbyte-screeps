@@ -38,7 +38,11 @@ macro_rules! icon_from {
     };
 }
 
-pub struct RecursiveVals
+
+
+
+
+pub struct RecursiveAvg
 {
     pub lists: Vec<Vec<u128>>,
     pub progressions: Vec<usize>,
@@ -48,7 +52,7 @@ pub struct RecursiveVals
     pub virtual_size: u128,
 }
 
-impl RecursiveVals
+impl RecursiveAvg
 {
     pub fn new(num_els: Vec<usize>) -> Self {
         let depth = num_els.len();
@@ -56,8 +60,8 @@ impl RecursiveVals
         for n in &num_els {
             virtual_size *= *n as u128;
         }
-        RecursiveVals {
-            lists: vec![Vec::new(); depth],
+        RecursiveAvg {
+            lists,
             progressions: vec![0; depth],
             sums: vec![0; depth],
             num_els,
