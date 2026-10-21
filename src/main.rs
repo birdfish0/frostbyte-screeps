@@ -18,14 +18,15 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
-    // set_default_filter_mode(FilterMode::Nearest);
     let font = load_ttf_font("assets/CutiveMono-Regular.ttf").await.unwrap();
     
     let mut start_time = Instant::now();
+    let mut durations = RecursiveAvg::new(vec![20, 5]);
 
     loop {
         let end_time = Instant::now();
         let frame_duration = end_time.duration_since(start_time);
+        durations.add(frame_duration.as_nanos());
 
         clear_background(BLACK);
 
@@ -33,9 +34,10 @@ async fn main() {
         draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, DARKGRAY);
         draw_text_ex(
-            &format!("tick XXXXXXXXXXXX | {}ns/t ({}tps) | {}fps", frame_duration.as_nanos(), 
+            &format!("tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>2}fps (avg. {:0>2})", frame_duration.as_nanos(), 
                                                     1000000000 / frame_duration.as_nanos().max(1),
-                                                    1000000000 / frame_duration.as_nanos().max(1)),
+                                                    1000000000 / frame_duration.as_nanos().max(1),
+                                                    1000000000 / durations.get().max(1)),
             20.0, 20.0, TextParams {
             font_size: 40,
             color: WHITE,
