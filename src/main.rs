@@ -13,6 +13,8 @@ fn window_conf() -> Conf {
          window_title: "Frostbyte Screeps Client".to_owned(),
          icon: Some(icon_from!("../assets/icon_big.bmp", "../assets/icon_med.bmp", "../assets/icon_small.bmp")),
          high_dpi: true,
+         window_width: 1300,
+         window_height: 800,
          ..Default::default()
      }
  }
@@ -35,8 +37,7 @@ async fn main() {
         draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, DARKGRAY);
         draw_text_ex(
-            &format!("tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>2}fps (avg. {:0>2})", frame_duration.as_nanos(), 
-                                                    1000000000 / frame_duration.as_nanos().max(1),
+            &format!("tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>2}fps", frame_duration.as_nanos(), 
                                                     1000000000 / frame_duration.as_nanos().max(1),
                                                     1000000000 / durations.get().max(1)),
             20.0, 20.0, TextParams {
