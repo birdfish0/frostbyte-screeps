@@ -76,7 +76,11 @@ impl RecursiveAvg
         }
     }
 
-    pub fn add(&mut self, value: u128, depth: usize) {
+    pub fn add(&mut self, value: u128) {
+        self.add_at_depth(value, 0);
+    }
+
+    pub fn add_at_depth(&mut self, value: u128, depth: usize) {
         if depth >= self.depth {
             return;
         }
@@ -86,7 +90,7 @@ impl RecursiveAvg
         self.progressions[depth] += 1;
         if self.progressions[depth] >= self.num_els[depth] {
             self.progressions[depth] = 0;
-            self.add(self.sums[depth], depth + 1);
+            self.add_at_depth(self.sums[depth], depth + 1);
         }
     }
 
