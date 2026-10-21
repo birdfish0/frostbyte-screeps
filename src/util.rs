@@ -1,5 +1,3 @@
-use std::{ops::{AddAssign, Div, SubAssign}};
-
 use macroquad::miniquad::conf::Icon;
 
 fn fill_argb_array_from_bitmap(arr: &mut [u8], bitmap: &[u8]) {

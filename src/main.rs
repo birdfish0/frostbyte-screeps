@@ -1,7 +1,5 @@
-use macroquad::miniquad::conf::Icon;
 use macroquad::prelude::*;
 use std::time::{Instant};
-use std::thread;
 
 use crate::util::RecursiveAvg;
 
