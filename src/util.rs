@@ -60,6 +60,12 @@ impl RecursiveAvg
         for n in &num_els {
             virtual_size *= *n as u128;
         }
+
+        let mut lists = Vec::with_capacity(depth);
+        for i in 0..depth {
+            lists.push(vec![0; num_els[i]]);
+        }
+
         RecursiveAvg {
             lists,
             progressions: vec![0; depth],
