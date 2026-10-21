@@ -33,8 +33,9 @@ async fn main() {
         clear_background(BLACK);
 
         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, DARKGRAY);
+        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, GRAY);
+        draw_arc(screen_width() - 30.0, screen_height() - 30.0, 64, 15.0, 0.0, 5.0, 90.0, YELLOW);
         draw_text_ex(
             &format!("tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>3}fps", frame_duration.as_nanos(), 
                                                     1000000000 / frame_duration.as_nanos().max(1),
