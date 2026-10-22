@@ -1,5 +1,14 @@
 use crate::game::*;
 
+pub struct MineralSource {
+    pub id: u64,
+    pub mineral_type: ResourceType,
+    pub pos: RoomPos,
+    pub amount: u32,
+    pub refresh_timer: u128,
+    pub density: MineralDensity,
+}
+
 impl MineralSource {
     pub fn refresh(&mut self, game_state: &mut GameState) {
         if self.density == MineralDensity::Low

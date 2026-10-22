@@ -2,8 +2,12 @@ use std::{collections::HashMap, sync::Mutex};
 
 use rand::{RngExt, rngs::SmallRng};
 
-use crate::{consts::*, utils};
+use crate::{
+    consts::*,
+    utils::{self, event_queue::EventQueue},
+};
 use enums::*;
+use mineral::*;
 
 pub mod enums;
 pub mod mineral;
@@ -60,15 +64,6 @@ pub struct EnergySource {
     pub pos: RoomPos,
     pub amount: u32,
     pub refresh_timer: u128,
-}
-
-pub struct MineralSource {
-    pub id: u64,
-    pub mineral_type: ResourceType,
-    pub pos: RoomPos,
-    pub amount: u32,
-    pub refresh_timer: u128,
-    pub density: MineralDensity,
 }
 
 pub struct CommoditySource {
