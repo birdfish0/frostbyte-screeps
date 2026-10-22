@@ -1,5 +1,5 @@
 #![warn(missing_docs)]
-//! Main crate for the Frostbyte Screeps client. See [README.md] for more info.
+#[doc = include_str!("../README.md")]
 
 use macroquad::prelude::*;
 use std::time::{Instant};
