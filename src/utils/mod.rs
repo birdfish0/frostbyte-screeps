@@ -1,7 +1,8 @@
 //! Provides general utility functions for use in the engine. See the documentation of specific submodules for more information.
 
-pub mod recursive_avg;
+pub mod event_queue;
 pub mod icon;
+pub mod recursive_avg;
 
 use rand::{Rng, RngExt};
 
