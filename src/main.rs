@@ -4,10 +4,10 @@
 use macroquad::prelude::*;
 use std::time::{Instant};
 
-use crate::util::RecursiveAvg;
+use crate::utils::recursive_avg::RecursiveAvg;
 use crate::consts::*;
 
-mod util;
+mod utils;
 mod game;
 mod consts;
 

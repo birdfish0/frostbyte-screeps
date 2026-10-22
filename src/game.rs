@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use rand::{RngExt, rngs::SmallRng};
 
-use crate::{consts::*, util};
+use crate::{consts::*, utils};
 
 pub struct GameState {
     pub paused: bool,
@@ -74,7 +74,7 @@ impl MineralSource {
             || game_state.random.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
         {
             self.density = match self.density {
-                MineralDensity::Low => util::random_choice(
+                MineralDensity::Low => utils::random_choice(
                     &mut game_state.random,
                     &[
                         MineralDensity::Medium,
@@ -87,7 +87,7 @@ impl MineralSource {
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
                 ),
-                MineralDensity::Medium => util::random_choice(
+                MineralDensity::Medium => utils::random_choice(
                     &mut game_state.random,
                     &[
                         MineralDensity::Low,
@@ -100,7 +100,7 @@ impl MineralSource {
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
                 ),
-                MineralDensity::High => util::random_choice(
+                MineralDensity::High => utils::random_choice(
                     &mut game_state.random,
                     &[
                         MineralDensity::Low,
@@ -113,7 +113,7 @@ impl MineralSource {
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
                 ),
-                MineralDensity::Ultra => util::random_choice(
+                MineralDensity::Ultra => utils::random_choice(
                     &mut game_state.random,
                     &[
                         MineralDensity::Low,
