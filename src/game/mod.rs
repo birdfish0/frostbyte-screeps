@@ -52,6 +52,7 @@ pub struct Room {
     pub construction_sites: Vec<u64>, // IDs
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct RoomPos {
     pub room_x: u8,
     pub room_y: u8,
@@ -59,6 +60,7 @@ pub struct RoomPos {
     pub pos_y: u8,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct EnergySource {
     pub id: u64,
     pub pos: RoomPos,
@@ -66,6 +68,7 @@ pub struct EnergySource {
     pub refresh_timer: u128,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct CommoditySource {
     pub id: u64,
     pub commodity_type: ResourceType,
@@ -83,6 +86,7 @@ pub enum MineralDensity {
     Ultra,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct Structure {
     pub id: u64,
     pub structure_type: StructureType,
@@ -91,6 +95,7 @@ pub struct Structure {
     pub hits_max: u32,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct ConstructionSite {
     pub id: u64,
     pub structure_type: StructureType,

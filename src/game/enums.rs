@@ -1,3 +1,4 @@
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum StructureType {
     Spawn,
     Extension,
@@ -20,6 +21,7 @@ pub enum StructureType {
     Nuker,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum ResourceType {
     Energy,
     Power,
@@ -119,6 +121,7 @@ pub enum ResourceType {
     Essence,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum CreepPart {
     None,
     Move,
@@ -155,6 +158,7 @@ pub enum CreepPart {
     Tough3,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum Direction {
     Up,
     Down,
@@ -166,6 +170,7 @@ pub enum Direction {
     DownRight,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum Intent {
     Move(u64, Direction), // ID, direction
 }
