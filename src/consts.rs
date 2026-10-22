@@ -35,3 +35,6 @@ pub const MINERAL_DENSITY_HIGH_VALUE: u32 = 70000;
 pub const MINERAL_DENSITY_ULTRA_VALUE: u32 = 100000;
 
 pub const MINERAL_REGEN_TIME: u32 = 50000;
+
+pub const MAP_SIZE_X: usize = 122;
+pub const MAP_SIZE_Y: usize = 122;

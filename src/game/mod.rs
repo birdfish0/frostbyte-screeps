@@ -31,6 +31,7 @@ pub struct Creep {
     pub spawning: bool,
 }
 
+#[derive(Clone)]
 pub struct Room {
     pub posx: u8,
     pub posy: u8,
