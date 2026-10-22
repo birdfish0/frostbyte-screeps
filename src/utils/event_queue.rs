@@ -2,10 +2,14 @@
 
 use std::collections::VecDeque;
 
+use crate::game::GameState;
+
 /// A trait that contains a function which is contained in [QueuedEvent::callback] and called in [EventQueue::tick]. It should not be called elsewhere.
 pub trait EventCallback {
     /// The function to be called when the event's tick value is reached.
-    fn callback(&self);
+    ///
+    /// It will be called on `&self` with a mutable reference to the current [GameState] as the only argument.
+    fn callback(&self, game_state: &mut GameState);
 }
 
 pub struct QueuedEvent {
@@ -51,9 +55,9 @@ impl EventQueue {
     ///
     /// All events within the queue that have a [`tick`][QueuedEvent::tick] value less than the one provided in the arguments
     /// will have their [`callback`][QueuedEvent::callback] called, and then be removed from the queue.
-    pub fn tick(&mut self, tick: u128) {
+    pub fn tick(&mut self, tick: u128, game_state: &mut GameState) {
         while let Some(evt) = self.events.pop_front_if(|ev| ev.tick <= tick) {
-            evt.callback.callback();
+            evt.callback.callback(game_state);
         }
     }
 }
