@@ -24,7 +24,7 @@ async fn main() {
     let font = load_ttf_font("assets/CutiveMono-Regular.ttf").await.unwrap();
     
     let mut start_time = Instant::now();
-    let mut durations = RecursiveAvg::new(vec![20, 5]);
+    let mut durations = RecursiveAvg::new(vec![20, 5], false);
 
     loop {
         let end_time = Instant::now();

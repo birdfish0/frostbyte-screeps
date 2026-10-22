@@ -77,11 +77,12 @@ pub struct RecursiveAvg
     pub num_els: Vec<usize>,
     pub depth: usize,
     pub virtual_size: u128,
+    pub sum_mode: bool,
 }
 
 impl RecursiveAvg
 {
-    pub fn new(num_els: Vec<usize>) -> Self {
+    pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
         let depth = num_els.len();
         let mut virtual_size: u128 = 1;
         for n in &num_els {
@@ -100,6 +101,7 @@ impl RecursiveAvg
             num_els,
             depth,
             virtual_size,
+            sum_mode
         }
     }
 
@@ -117,11 +119,21 @@ impl RecursiveAvg
         self.progressions[depth] += 1;
         if self.progressions[depth] >= self.num_els[depth] {
             self.progressions[depth] = 0;
-            self.add_at_depth(self.sums[depth], depth + 1);
+            if self.sum_mode {
+                self.add_at_depth(self.sums[depth], depth + 1);
+            }
+            else {
+                self.add_at_depth(self.sums[depth] / self.num_els[depth] as u128, depth + 1);
+            }
         }
     }
 
     pub fn get(&self) -> u128 {
-        return self.sums[self.depth - 1] / self.virtual_size;
+        if self.sum_mode {
+            return self.sums[self.depth - 1] / self.virtual_size;
+        }
+        else {
+            return self.sums[self.depth - 1] / self.num_els[self.depth - 1] as u128;
+        }
     }
 }
