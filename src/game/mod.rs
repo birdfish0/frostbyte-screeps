@@ -5,8 +5,8 @@ use rand::{RngExt, rngs::SmallRng};
 use crate::{consts::*, utils};
 use enums::*;
 
-pub mod mineral;
 pub mod enums;
+pub mod mineral;
 
 pub struct GameState {
     pub paused: bool,

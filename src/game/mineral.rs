@@ -4,7 +4,9 @@ impl MineralSource {
     pub fn refresh(&mut self, game_state: &mut GameState) {
         if self.density == MineralDensity::Low
             || self.density == MineralDensity::Ultra
-            || game_state.random.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
+            || game_state
+                .random
+                .random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
         {
             self.density = match self.density {
                 MineralDensity::Low => utils::random_choice(

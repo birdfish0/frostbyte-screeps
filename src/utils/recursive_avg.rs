@@ -1,36 +1,35 @@
 //! Contains the [RecursiveAvg] struct and its implementation.
 
 /// Uses multiple lists to keep track of the rolling average over a very large window size without storing the entire dataset.
-/// 
+///
 /// Note: The following explanations assume a depth of greater than 1.
 /// This struct should not be used in cases where `depth = 1` and should be replaced with a normal rolling average struct.
-/// 
+///
 /// ## Principle
-/// 
+///
 /// Consider two lists l0 and l1 of some maximum size.
-/// 
+///
 /// Each element of a dataset is pushed\* to l0 until l0 is filled.
 /// Then, the average of l0 is taken and pushed\* to l1, and l0 is cleared.
-/// 
+///
 /// Repeat until l1 is filled. Then, the average\*\* of l1 is equal to all the data points within the rolling window.
 /// The process can then continue by overwriting the oldest values of l1, as in a rolling average.
-/// 
+///
 /// (\*In the actual implementation, the lists are kept at a fixed size and their values replaced one by one until the entire list has been replaced.)
-/// 
+///
 /// (\*\*Average values affected by integer division logic.)
-/// 
+///
 /// This can be repeated with more lists l0...ln to further expand the window of the average average.
-/// 
+///
 /// The smaller the size of the preceding lists, the more frequently the final average value will update.
-/// 
+///
 /// NOTE: Depending on the [`sum_mode`][RecursiveAvg::sum_mode] value, l1 may contain a sum of the values of l0 instead of the average, to preserve precision.
 /// See the docs for [`sum_mode`][RecursiveAvg::sum_mode] for more information.
-/// 
+///
 /// ## Vocabulary
-/// 
+///
 /// "Depth" refers to `num_els.len()` and `lists.len()` (they are equal). It is the number of lists used to track the data.
-pub struct RecursiveAvg
-{
+pub struct RecursiveAvg {
     /// The lists that keep track of the datasets. `lists[0]` contains the input values,
     /// `lists[1]` contains the averages\* of `lists[0]`, and so on. (\*see note above)
     pub lists: Vec<Vec<u128>>,
@@ -56,19 +55,18 @@ pub struct RecursiveAvg
     pub sum_mode: bool,
 }
 
-impl RecursiveAvg
-{
+impl RecursiveAvg {
     /// Constructor.
-    /// 
+    ///
     /// ## Arguments
-    /// 
+    ///
     /// - `num_els`: See the docs of the struct on [`num_els`][RecursiveAvg::num_els] for more information.
     /// - `sum_mode`: See the docs of the struct on [`sum_mode`][RecursiveAvg::sum_mode] for more information.
-    /// 
+    ///
     /// ## Panics
-    /// 
+    ///
     /// Panics if `num_els.len() == 0`.
-    /// 
+    ///
     /// Panics if `num_els` contains a 0.
     pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
         if num_els.len() == 0 {
@@ -95,7 +93,7 @@ impl RecursiveAvg
             sums: vec![0; depth],
             num_els,
             virtual_size,
-            sum_mode
+            sum_mode,
         }
     }
 
@@ -105,9 +103,9 @@ impl RecursiveAvg
     }
 
     /// Add a value to the list at depth `depth` and increment the corresponding index.
-    /// 
+    ///
     /// This should only be used with `depth = 0`, except internally to add the average (or sum) of each list to the next list.
-    /// 
+    ///
     /// Returns when `depth` is greater than the depth of the struct, for easy recursion.
     fn add_at_depth(&mut self, value: u128, depth: usize) {
         if depth >= self.lists.len() {
@@ -121,15 +119,14 @@ impl RecursiveAvg
             self.progressions[depth] = 0;
             if self.sum_mode {
                 self.add_at_depth(self.sums[depth], depth + 1);
-            }
-            else {
+            } else {
                 self.add_at_depth(self.sums[depth] / self.num_els[depth] as u128, depth + 1);
             }
         }
     }
 
     /// Get the average of the values of the dataset.
-    /// 
+    ///
     /// This value is affected by integer division precision,
     /// and may be less precise than excpected in `sum_mode = false` (see docs on `sum_mode` for the struct).
     ///
@@ -138,11 +135,8 @@ impl RecursiveAvg
     pub fn get(&self) -> u128 {
         if self.sum_mode {
             return self.sums[self.lists.len() - 1] / self.virtual_size;
-        }
-        else {
+        } else {
             return self.sums[self.lists.len() - 1] / self.num_els[self.lists.len() - 1] as u128;
         }
     }
 }
-
-
