@@ -34,8 +34,8 @@ async fn main() {
         clear_background(WORLD_BG_COLOR);
 
         draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, GRAY);
-        draw_arc(screen_width() - 30.0, screen_height() - 30.0, 64, 15.0, 0.0, 5.0, 90.0, YELLOW);
+        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, BLACK);
+        draw_arc(screen_width() - 30.0, screen_height() - 30.0, 64, 14.0, 0.0, 5.0, 90.0, YELLOW);
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, UI_HIGH_BG_COLOR);
         draw_text_ex(
             &format!("tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>3}fps", frame_duration.as_nanos(), 
