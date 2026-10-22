@@ -36,7 +36,6 @@ where
         if random.random_ratio(now_weight, total_weight) {
             return *v;
         }
-        
     }
     unreachable!(
         "random_ratio should always return true when numerator and denominator are equal."
