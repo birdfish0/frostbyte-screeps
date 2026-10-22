@@ -1,5 +1,5 @@
 #![warn(missing_docs)]
-#[doc = include_str!("../README.md")]
+#![doc = include_str!("../README.md")]
 
 use macroquad::prelude::*;
 use std::time::{Instant};
