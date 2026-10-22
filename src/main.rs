@@ -1,3 +1,6 @@
+#![warn(missing_docs)]
+//! Main crate for the Frostbyte Screeps client. See [README.md] for more info.
+
 use macroquad::prelude::*;
 use std::time::{Instant};
 
