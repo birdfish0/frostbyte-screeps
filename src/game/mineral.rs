@@ -1,5 +1,11 @@
-use crate::game::*;
+use rand::Rng;
 
+use crate::{
+    game::*,
+    utils::event_queue::{EventCallback, QueuedEvent},
+};
+
+#[derive(Clone)]
 pub struct MineralSource {
     pub id: u64,
     pub mineral_type: ResourceType,
@@ -9,17 +15,37 @@ pub struct MineralSource {
     pub density: MineralDensity,
 }
 
+pub struct MineralRefreshEvent {
+    pub id: u64,
+}
+
+impl EventCallback for MineralRefreshEvent {
+    fn callback(&self, game_state: &mut GameState) {
+        let mut msrcs = game_state.mineral_sources.lock().unwrap();
+
+        let src = msrcs.get_mut(&self.id).unwrap();
+
+        src.refresh(&mut game_state.random, game_state.tick);
+
+        game_state.event_queue.enqueue(QueuedEvent {
+            tick: src.refresh_timer,
+            callback: Box::new(MineralRefreshEvent { id: self.id }),
+        });
+    }
+}
+
 impl MineralSource {
-    pub fn refresh(&mut self, game_state: &mut GameState) {
+    pub fn refresh<T>(&mut self, rng: &mut T, tick: u128)
+    where
+        T: Rng,
+    {
         if self.density == MineralDensity::Low
             || self.density == MineralDensity::Ultra
-            || game_state
-                .random
-                .random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
+            || rng.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
         {
             self.density = match self.density {
                 MineralDensity::Low => utils::random_choice(
-                    &mut game_state.random,
+                    rng,
                     &[
                         MineralDensity::Medium,
                         MineralDensity::High,
@@ -32,7 +58,7 @@ impl MineralSource {
                     ],
                 ),
                 MineralDensity::Medium => utils::random_choice(
-                    &mut game_state.random,
+                    rng,
                     &[
                         MineralDensity::Low,
                         MineralDensity::High,
@@ -45,7 +71,7 @@ impl MineralSource {
                     ],
                 ),
                 MineralDensity::High => utils::random_choice(
-                    &mut game_state.random,
+                    rng,
                     &[
                         MineralDensity::Low,
                         MineralDensity::Medium,
@@ -58,7 +84,7 @@ impl MineralSource {
                     ],
                 ),
                 MineralDensity::Ultra => utils::random_choice(
-                    &mut game_state.random,
+                    rng,
                     &[
                         MineralDensity::Low,
                         MineralDensity::Medium,
@@ -78,6 +104,6 @@ impl MineralSource {
             MineralDensity::High => MINERAL_DENSITY_HIGH_VALUE,
             MineralDensity::Ultra => MINERAL_DENSITY_ULTRA_VALUE,
         };
-        self.refresh_timer = game_state.tick + MINERAL_REGEN_TIME as u128;
+        self.refresh_timer = tick + MINERAL_REGEN_TIME as u128;
     }
 }

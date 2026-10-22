@@ -23,6 +23,7 @@ pub struct GameState {
     pub commodity_sources: Mutex<HashMap<u64, CommoditySource>>,
     pub structures: Mutex<HashMap<u64, Structure>>,
     pub random: SmallRng,
+    pub event_queue: EventQueue,
 }
 
 pub struct Creep {
