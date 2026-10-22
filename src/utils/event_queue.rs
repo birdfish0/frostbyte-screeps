@@ -26,9 +26,7 @@ pub struct EventQueue {
 impl EventQueue {
     /// Constructor. Sets the [events][EventQueue::events] field directly.
     pub fn from_deque(events: VecDeque<QueuedEvent>) -> Self {
-        Self {
-            events,
-        }
+        Self { events }
     }
 
     /// Constructor. Creates the struct with an empty deque.
@@ -39,7 +37,7 @@ impl EventQueue {
     }
 
     /// Add an event to the queue.
-    /// 
+    ///
     /// The event will be inserted into the queue using a binary search on [`tick`][QueuedEvent::tick] to ensure the queue remains sorted.
     pub fn enqueue(&mut self, event: QueuedEvent) {
         let idx = match self.events.binary_search_by_key(&event.tick, |ev| ev.tick) {
@@ -50,7 +48,7 @@ impl EventQueue {
     }
 
     /// Update the event queue with the given tick value.
-    /// 
+    ///
     /// All events within the queue that have a [`tick`][QueuedEvent::tick] value less than the one provided in the arguments
     /// will have their [`callback`][QueuedEvent::callback] called, and then be removed from the queue.
     pub fn tick(&mut self, tick: u128) {
