@@ -82,6 +82,13 @@ pub struct RecursiveAvg
 impl RecursiveAvg
 {
     pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
+        if num_els.len() == 0 {
+            panic!("num_els must not be empty.");
+        }
+        if num_els.contains(&0) {
+            panic!("num_els must not contain a 0.");
+        }
+
         let depth = num_els.len();
         let mut virtual_size: u128 = 1;
         for n in &num_els {
