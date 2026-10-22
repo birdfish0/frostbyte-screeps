@@ -4,7 +4,7 @@ use crate::{
     game::*, utils::event_queue::{self, EventCallback, QueuedEvent},
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MineralSource {
     pub id: u64,
     pub mineral_type: ResourceType,
@@ -14,6 +14,7 @@ pub struct MineralSource {
     pub density: MineralDensity,
 }
 
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct MineralRefreshEvent {
     pub id: u64,
 }

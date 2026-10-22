@@ -29,6 +29,7 @@
 /// ## Vocabulary
 ///
 /// "Depth" refers to `num_els.len()` and `lists.len()` (they are equal). It is the number of lists used to track the data.
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct RecursiveAvg {
     /// The lists that keep track of the datasets. `lists[0]` contains the input values,
     /// `lists[1]` contains the averages\* of `lists[0]`, and so on. (\*see note above)

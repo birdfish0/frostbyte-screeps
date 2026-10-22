@@ -1,6 +1,6 @@
 //! Contains enums used in the game engine that do not have their own module. Most will likely be moved into their own module once it is implemented.
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum StructureType {
     Spawn,
     Extension,
@@ -23,7 +23,7 @@ pub enum StructureType {
     Nuker,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum ResourceType {
     Energy,
     Power,
@@ -123,7 +123,7 @@ pub enum ResourceType {
     Essence,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum CreepPart {
     None,
     Move,
@@ -160,7 +160,7 @@ pub enum CreepPart {
     Tough3,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Direction {
     Up,
     Down,
@@ -172,7 +172,7 @@ pub enum Direction {
     DownRight,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Intent {
     Move(u64, Direction), // ID, direction
 }

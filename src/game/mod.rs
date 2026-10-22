@@ -16,6 +16,7 @@ pub mod enums;
 pub mod mineral;
 pub mod game_state;
 
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Creep {
     pub id: u64,
     pub name: String,
@@ -31,7 +32,7 @@ pub struct Creep {
     pub spawning: bool,
 }
 
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Room {
     pub posx: u8,
     pub posy: u8,
@@ -44,7 +45,7 @@ pub struct Room {
     pub construction_sites: Vec<u64>, // IDs
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct RoomPos {
     pub room_x: u8,
     pub room_y: u8,
@@ -52,7 +53,7 @@ pub struct RoomPos {
     pub pos_y: u8,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct EnergySource {
     pub id: u64,
     pub pos: RoomPos,
@@ -60,7 +61,7 @@ pub struct EnergySource {
     pub refresh_timer: u128,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct CommoditySource {
     pub id: u64,
     pub commodity_type: ResourceType,
@@ -70,7 +71,7 @@ pub struct CommoditySource {
     pub density: MineralDensity,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum MineralDensity {
     Low,
     Medium,
@@ -78,7 +79,7 @@ pub enum MineralDensity {
     Ultra,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct Structure {
     pub id: u64,
     pub structure_type: StructureType,
@@ -87,7 +88,7 @@ pub struct Structure {
     pub hits_max: u32,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct ConstructionSite {
     pub id: u64,
     pub structure_type: StructureType,
@@ -95,6 +96,7 @@ pub struct ConstructionSite {
     pub energy: u64,
 }
 
+#[derive(Clone, Debug)]
 pub struct Store {
     pub contents: HashMap<ResourceType, u32>,
     pub single_type: Option<ResourceType>,

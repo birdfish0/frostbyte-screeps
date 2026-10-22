@@ -4,6 +4,7 @@ use rand::SeedableRng;
 
 use crate::{game::*, utils::event_queue};
 
+#[derive(Debug)]
 pub struct GameState {
     pub paused: bool,
     pub tick: u128,

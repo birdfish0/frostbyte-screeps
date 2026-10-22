@@ -1,6 +1,6 @@
 //! Contains the [EventQueue] struct and its implementation.
 
-use std::collections::VecDeque;
+use std::{any::Any, collections::VecDeque, fmt::Debug};
 
 use crate::{game::game_state::GameState, utils::event_queue};
 
@@ -19,9 +19,16 @@ pub struct QueuedEvent {
     pub callback: Box<dyn EventCallback>,
 }
 
+impl Debug for QueuedEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "QueuedEvent {{ tick: {}, callback: {:?} }}", self.tick, self.callback.type_id())
+    }
+}
+
 /// A queue of events that need to be called at a certain tick value.
 ///
 /// Events are represented as [QueuedEvent]s in a sorted [VecDeque], from lowest to highest [tick][QueuedEvent::tick] value.
+#[derive(Debug)]
 pub struct EventQueue {
     /// The deque that stores the queued events, sorted from lowest to highest [tick][QueuedEvent::tick] value.
     pub events: VecDeque<QueuedEvent>,
