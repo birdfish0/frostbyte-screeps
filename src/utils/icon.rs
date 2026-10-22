@@ -1,3 +1,5 @@
+//! Includes functions and macros for handling [Icon]s.
+
 use macroquad::miniquad::conf::Icon;
 
 /// Converts byte arrays containing info from `.bmp` files into a byte array for use in the [Icon] struct.
