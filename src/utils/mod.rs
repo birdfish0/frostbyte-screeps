@@ -28,15 +28,15 @@ where
         panic!("Sum of all weights must not equal zero.");
     }
     let mut now_weight = 0;
-    let mut iterweight = weights.iter();
+    let iterweight = weights.iter();
     let mut iterval = vals.iter();
-    while let Some(w) = iterweight.next() {
-        if let Some(v) = iterval.next() {
-            now_weight += w;
-            if random.random_ratio(now_weight, total_weight) {
-                return *v;
-            }
+    for w in iterweight {
+        let v = iterval.next().unwrap(); // Safe unwrap, length confirmed before
+        now_weight += w;
+        if random.random_ratio(now_weight, total_weight) {
+            return *v;
         }
+        
     }
     unreachable!(
         "random_ratio should always return true when numerator and denominator are equal."

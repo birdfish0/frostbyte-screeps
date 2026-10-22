@@ -69,7 +69,7 @@ impl RecursiveAvg {
     ///
     /// Panics if `num_els` contains a 0.
     pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
-        if num_els.len() == 0 {
+        if num_els.is_empty() {
             panic!("num_els must not be empty.");
         }
         if num_els.contains(&0) {
@@ -83,8 +83,8 @@ impl RecursiveAvg {
         }
 
         let mut lists = Vec::with_capacity(depth);
-        for i in 0..depth {
-            lists.push(vec![0; num_els[i]]);
+        for item in num_els.iter() {
+            lists.push(vec![0; *item]);
         }
 
         RecursiveAvg {
@@ -134,9 +134,9 @@ impl RecursiveAvg {
     /// the return value will be inaccurate as the rest of the data points start at 0 until `lists[depth - 1]` is fully filled.
     pub fn get(&self) -> u128 {
         if self.sum_mode {
-            return self.sums[self.lists.len() - 1] / self.virtual_size;
+            self.sums[self.lists.len() - 1] / self.virtual_size
         } else {
-            return self.sums[self.lists.len() - 1] / self.num_els[self.lists.len() - 1] as u128;
+            self.sums[self.lists.len() - 1] / self.num_els[self.lists.len() - 1] as u128
         }
     }
 }

@@ -1,5 +1,6 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
+#![allow(unused)]
 
 use macroquad::prelude::*;
 use std::time::Instant;
@@ -56,7 +57,7 @@ async fn main() {
         );
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, UI_HIGH_BG_COLOR);
         draw_text_ex(
-            &format!(
+            format!(
                 "tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>3}fps",
                 frame_duration.as_nanos(),
                 1000000000 / frame_duration.as_nanos().max(1),
