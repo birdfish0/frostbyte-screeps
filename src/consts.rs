@@ -4,6 +4,10 @@ pub const WORLD_BG_COLOR: Color = Color::from_hex(0x1b1b1b);
 pub const UI_HIGH_BG_COLOR: Color = Color::from_hex(0x444444);
 pub const UI_LOW_BG_COLOR: Color = Color::from_hex(0x2d2d2d);
 
+pub const TERRAIN_PLAINS_COLOR: Color = Color::from_hex(0x2b2b2b);
+pub const TERRAIN_SWAMP_COLOR: Color = Color::from_hex(0x384425);
+pub const TERRAIN_WALL_COLOR: Color = Color::from_hex(0x151515);
+
 pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 
 // In the game docs:
