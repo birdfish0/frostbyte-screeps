@@ -2,7 +2,7 @@
 
 use std::collections::VecDeque;
 
-use crate::game::GameState;
+use crate::game::game_state::GameState;
 
 /// A trait that contains a function which is contained in [QueuedEvent::callback] and called in [EventQueue::tick]. It should not be called elsewhere.
 pub trait EventCallback {
