@@ -1,8 +1,7 @@
 use rand::Rng;
 
 use crate::{
-    game::*,
-    utils::event_queue::{EventCallback, QueuedEvent},
+    game::*, utils::event_queue::{self, EventCallback, QueuedEvent},
 };
 
 #[derive(Clone)]
@@ -20,14 +19,12 @@ pub struct MineralRefreshEvent {
 }
 
 impl EventCallback for MineralRefreshEvent {
-    fn callback(&self, game_state: &mut GameState) {
-        let mut msrcs = game_state.mineral_sources.lock().unwrap();
-
-        let src = msrcs.get_mut(&self.id).unwrap();
+    fn callback(&self, game_state: &mut GameState, event_queue: &mut EventQueue) {
+        let src = game_state.mineral_sources.get_mut().unwrap().get_mut(&self.id).unwrap();
 
         src.refresh(&mut game_state.random, game_state.tick);
 
-        game_state.event_queue.enqueue(QueuedEvent {
+        event_queue.enqueue(QueuedEvent {
             tick: src.refresh_timer,
             callback: Box::new(MineralRefreshEvent { id: self.id }),
         });
