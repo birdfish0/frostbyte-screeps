@@ -72,10 +72,10 @@ pub fn random_choice<T, R>(random:&mut R, vals: &[T], weights: &[u32]) -> T wher
 pub struct RecursiveAvg
 {
     pub lists: Vec<Vec<u128>>,
-    pub progressions: Vec<usize>,
-    pub sums: Vec<u128>,
-    pub num_els: Vec<usize>,
-    pub virtual_size: u128,
+    progressions: Vec<usize>,
+    sums: Vec<u128>,
+    num_els: Vec<usize>,
+    virtual_size: u128,
     pub sum_mode: bool,
 }
 
@@ -107,7 +107,7 @@ impl RecursiveAvg
         self.add_at_depth(value, 0);
     }
 
-    pub fn add_at_depth(&mut self, value: u128, depth: usize) {
+    fn add_at_depth(&mut self, value: u128, depth: usize) {
         if depth >= self.lists.len() {
             return;
         }
