@@ -1,3 +1,5 @@
+//! Contains enums used in the game engine that do not have their own module. Most will likely be moved into their own module once it is implemented.
+
 #[derive(PartialEq, Eq, Copy, Clone)]
 pub enum StructureType {
     Spawn,
