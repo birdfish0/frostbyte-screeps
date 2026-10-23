@@ -3,6 +3,7 @@
 pub mod event_queue;
 pub mod icon;
 pub mod recursive_avg;
+pub mod hash;
 
 use log::error;
 use rand::{Rng, RngExt};

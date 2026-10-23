@@ -4,7 +4,7 @@ use std::{collections::VecDeque, time::Instant};
 
 use rand::SeedableRng;
 
-use crate::{game::*, utils::{event_queue, recursive_avg::RecursiveAvg}};
+use crate::{game::*, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
 
 #[derive(Debug, Clone)]
 /// An object that represents the current state of the game.
@@ -18,15 +18,15 @@ pub struct GameState {
     pub last_tick_time: Instant,
     pub intents: VecDeque<Intent>,
     pub rooms: Vec<Vec<Room>>,
-    pub creeps: HashMap<u64, Creep>,
-    pub structures: HashMap<u64, Structure>,
-    pub construction_sites: HashMap<u64, ConstructionSite>,
-    pub ruins: HashMap<u64, Ruin>,
-    pub tombstones: HashMap<u64, Tombstone>,
-    pub dropped_resources: HashMap<u64, DroppedResource>,
-    pub energy_sources: HashMap<u64, EnergySource>,
-    pub mineral_sources: HashMap<u64, MineralSource>,
-    pub commodity_sources: HashMap<u64, CommoditySource>,
+    pub creeps: HashMap<u64, Creep, SeaHashBuilder>,
+    pub structures: HashMap<u64, Structure, SeaHashBuilder>,
+    pub construction_sites: HashMap<u64, ConstructionSite, SeaHashBuilder>,
+    pub ruins: HashMap<u64, Ruin, SeaHashBuilder>,
+    pub tombstones: HashMap<u64, Tombstone, SeaHashBuilder>,
+    pub dropped_resources: HashMap<u64, DroppedResource, SeaHashBuilder>,
+    pub energy_sources: HashMap<u64, EnergySource, SeaHashBuilder>,
+    pub mineral_sources: HashMap<u64, MineralSource, SeaHashBuilder>,
+    pub commodity_sources: HashMap<u64, CommoditySource, SeaHashBuilder>,
     pub random: SmallRng,
 }
 
@@ -61,6 +61,9 @@ impl GameState {
                 });
             }
         }
+
+        let mut rng = SmallRng::seed_from_u64(4);
+
         Self{
             paused: false,
             tick: 0,
@@ -69,16 +72,16 @@ impl GameState {
             last_tick_time: Instant::now(),
             intents: VecDeque::new(),
             rooms: rooms,
-            creeps: HashMap::new(),
-            structures: HashMap::new(),
-            construction_sites: HashMap::new(),
-            ruins: HashMap::new(),
-            tombstones: HashMap::new(),
-            dropped_resources: HashMap::new(),
-            energy_sources: HashMap::new(),
-            mineral_sources: HashMap::new(),
-            commodity_sources: HashMap::new(),
-            random: SmallRng::seed_from_u64(4),
+            creeps: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            structures: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            construction_sites: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            ruins: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            tombstones: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            dropped_resources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            energy_sources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            mineral_sources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            commodity_sources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
+            random: rng,
         }
     }
 

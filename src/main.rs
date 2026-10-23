@@ -10,6 +10,7 @@ use std::thread::{self, panicking};
 use std::time::{Duration, Instant};
 
 use crate::consts::*;
+use crate::game::Creep;
 use crate::game::game_state::{GameState, RenderToServerThreadMsg};
 use crate::utils::event_queue::{self, EventQueue};
 use crate::utils::recursive_avg::RecursiveAvg;
