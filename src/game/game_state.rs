@@ -1,6 +1,6 @@
 //! Contains [GameState] and its implementation.
 
-use std::time::Instant;
+use std::{collections::VecDeque, time::Instant};
 
 use rand::SeedableRng;
 
@@ -13,7 +13,7 @@ pub struct GameState {
     pub force_tick_delay: u32,
     pub tick_durations: RecursiveAvg,
     pub last_tick_time: Instant,
-    pub intents: Vec<Intent>,
+    pub intents: VecDeque<Intent>,
     pub rooms: Vec<Vec<Room>>,
     pub creeps: HashMap<u64, Creep>,
     pub structures: HashMap<u64, Structure>,
@@ -59,7 +59,7 @@ impl GameState {
             force_tick_delay: 0,
             tick_durations: RecursiveAvg::new(vec![200, 10, 100], true),
             last_tick_time: Instant::now(),
-            intents: Vec::new(),
+            intents: VecDeque::new(),
             rooms: rooms,
             creeps: HashMap::new(),
             structures: HashMap::new(),
@@ -78,6 +78,11 @@ impl GameState {
         let tick_duration = self.last_tick_time.elapsed();
         self.tick_durations.add(tick_duration.as_nanos());
         self.tick += 1;
+
+        while let Some(intent) = self.intents.pop_front() {
+            self.process_intent(intent);
+        }
+
         event_queue.tick(self.tick, self);
         self.last_tick_time = Instant::now();
     }
