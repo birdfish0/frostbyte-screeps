@@ -4,7 +4,7 @@ use rand::SeedableRng;
 
 use crate::{game::*, utils::event_queue};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameState {
     pub paused: bool,
     pub tick: u128,
@@ -21,6 +21,14 @@ pub struct GameState {
     pub mineral_sources: HashMap<u64, MineralSource>,
     pub commodity_sources: HashMap<u64, CommoditySource>,
     pub random: SmallRng,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+pub enum RenderToServerThreadMsg {
+    Quit,
+    Pause(bool),
+    ForceTickDelay(u32),
+    RequestFullState,
 }
 
 impl GameState {

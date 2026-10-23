@@ -4,10 +4,14 @@
 
 use log::{error, info};
 use log4rs::config::Deserializers;
+use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
 use macroquad::prelude::*;
+use std::thread::{self, panicking};
 use std::time::Instant;
 
 use crate::consts::*;
+use crate::game::game_state::{GameState, RenderToServerThreadMsg};
+use crate::utils::event_queue::{self, EventQueue};
 use crate::utils::recursive_avg::RecursiveAvg;
 
 mod consts;
@@ -42,6 +46,46 @@ async fn main() {
 
     let mut start_time = Instant::now();
     let mut durations = RecursiveAvg::new(vec![20, 5], false);
+
+    debug!("Setup channels");
+    
+    let (tx_state, rx_state) = bounded::<GameState>(1);
+    let (tx, rx_srv) = unbounded::<RenderToServerThreadMsg>();
+    let (tx_main_state, rx_srv_state) = bounded::<GameState>(1);
+
+    debug!("Setup server thread");
+    
+    thread::spawn(move || {
+        let mut game_state = GameState::new();
+        let mut event_queue = EventQueue::new();
+        let mut stop = false;
+        while !stop {
+            while !rx_srv.is_empty() {
+                match rx_srv.recv() {
+                    Ok(msg) => {
+                        match msg {
+                            RenderToServerThreadMsg::Quit => {
+                                stop = true;
+                            },
+                            RenderToServerThreadMsg::Pause(paused) => {
+                                game_state.paused = paused;
+                            },
+                            RenderToServerThreadMsg::ForceTickDelay(delay) => {
+                                game_state.force_tick_delay = delay;
+                            },
+                            RenderToServerThreadMsg::RequestFullState => {
+                                tx_state.send(game_state.clone());
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        error!("Failed to read message from render thread: {}", err);
+                    }
+                }
+            }
+            game_state.tick(&mut event_queue);
+        }
+    });
 
     info!("Init done");
 
