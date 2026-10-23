@@ -19,7 +19,7 @@ fn fill_argb_array_from_bitmap(arr: &mut [u8], bitmap: &[u8]) {
 
 /// Create an [Icon] object from three byte arrays containing info from `.bmp` files, 64x64, 32x32, and 16x16 in size respectively.
 ///
-/// Color data is expected to begin on byte 70 exactly, in the format of B, G, R, A, 4 bytes per pixel.
+/// Color data is expected to begin on byte 71 exactly, in the format of B, G, R, A, 4 bytes per pixel.
 pub fn icon_from(bigfile: &[u8], medfile: &[u8], smallfile: &[u8]) -> Icon {
     let mut big = [0; 16384];
     fill_argb_array_from_bitmap(&mut big, bigfile);
@@ -36,7 +36,7 @@ pub fn icon_from(bigfile: &[u8], medfile: &[u8], smallfile: &[u8]) -> Icon {
 #[macro_export]
 /// Create the [Icon] object from the paths to three `.bmp` files, 64x64, 32x32, and 16x16 in size respectively.
 ///
-/// Color data is expected to begin on byte 70 exactly, in the format of B, G, R, A, 4 bytes per pixel.
+/// Color data is expected to begin on byte 71 exactly, in the format of B, G, R, A, 4 bytes per pixel.
 ///
 /// Equivalent to a call to [`icon_from`] using `include_bytes!` around the provided filenames.
 macro_rules! icon_from {
