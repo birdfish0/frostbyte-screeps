@@ -1,14 +1,18 @@
 //! Contains [GameState] and its implementation.
 
+use std::time::Instant;
+
 use rand::SeedableRng;
 
-use crate::{game::*, utils::event_queue};
+use crate::{game::*, utils::{event_queue, recursive_avg::RecursiveAvg}};
 
 #[derive(Debug, Clone)]
 pub struct GameState {
     pub paused: bool,
     pub tick: u128,
     pub force_tick_delay: u32,
+    pub tick_durations: RecursiveAvg,
+    pub last_tick_time: Instant,
     pub intents: Vec<Intent>,
     pub rooms: Vec<Vec<Room>>,
     pub creeps: HashMap<u64, Creep>,
@@ -53,6 +57,8 @@ impl GameState {
             paused: false,
             tick: 0,
             force_tick_delay: 0,
+            tick_durations: RecursiveAvg::new(vec![200, 10, 100], true),
+            last_tick_time: Instant::now(),
             intents: Vec::new(),
             rooms: rooms,
             creeps: HashMap::new(),
@@ -69,7 +75,11 @@ impl GameState {
     }
 
     pub fn tick(&mut self, event_queue: &mut EventQueue) {
+        let tick_duration = self.last_tick_time.elapsed();
+        self.tick_durations.add(tick_duration.as_nanos());
+        self.tick += 1;
         event_queue.tick(self.tick, self);
+        self.last_tick_time = Instant::now();
     }
 
     pub fn process_intent(&mut self, intent: Intent) {

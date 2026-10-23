@@ -142,9 +142,10 @@ async fn main() {
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, UI_HIGH_BG_COLOR);
         draw_text_ex(
             format!(
-                "tick XXXXXXXXXXXX | {:0>12}ns/t ({:0>4}tps) | {:0>3}fps",
-                frame_duration.as_nanos(),
-                1000000000 / frame_duration.as_nanos().max(1),
+                "tick {:0>12} | {:0>12}ns/t ({:0>8}tps) | {:0>3}fps",
+                render_gamestate.tick,
+                render_gamestate.tick_durations.get(),
+                1000000000 / render_gamestate.tick_durations.get().max(1),
                 1000000000 / durations.get().max(1)
             ),
             20.0,
