@@ -7,7 +7,7 @@ use log4rs::config::Deserializers;
 use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
 use macroquad::prelude::*;
 use std::thread::{self, panicking};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::consts::*;
 use crate::game::game_state::{GameState, RenderToServerThreadMsg};
@@ -54,7 +54,6 @@ async fn main() {
     let (tx_main_state, rx_srv_state) = bounded::<GameState>(1);
 
     debug!("Setup server thread");
-    
     thread::spawn(move || {
         let mut game_state = GameState::new();
         let mut event_queue = EventQueue::new();
@@ -84,6 +83,9 @@ async fn main() {
                 }
             }
             game_state.tick(&mut event_queue);
+            if game_state.force_tick_delay > 0 {
+                thread::sleep(Duration::from_nanos(game_state.force_tick_delay as u64));
+            }
         }
     });
 
