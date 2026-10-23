@@ -54,7 +54,8 @@ async fn main() {
     let (tx_main_state, rx_srv_state) = bounded::<GameState>(1);
 
     debug!("Setup server thread");
-    thread::spawn(move || {
+
+    let server_thread = thread::spawn(move || {
         let mut game_state = GameState::new();
         let mut event_queue = EventQueue::new();
         let mut stop = false;
@@ -133,4 +134,7 @@ async fn main() {
 
         next_frame().await
     }
+
+    tx.send(RenderToServerThreadMsg::Quit);
+    server_thread.join();
 }
