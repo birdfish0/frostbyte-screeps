@@ -6,11 +6,14 @@ use log::{error, info};
 use log4rs::config::Deserializers;
 use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
 use macroquad::prelude::*;
+use std::fs;
+use std::io::Read;
 use std::thread::{self, panicking};
 use std::time::{Duration, Instant};
 
 use crate::consts::*;
 use crate::game::Creep;
+use crate::game::game_state::RenderToServerThreadMsg::LoadMapFile;
 use crate::game::game_state::{GameState, RenderToServerThreadMsg};
 use crate::utils::event_queue::{self, EventQueue};
 use crate::utils::recursive_avg::RecursiveAvg;
@@ -74,6 +77,23 @@ async fn main() {
                             RenderToServerThreadMsg::ForceTickDelay(delay) => {
                                 game_state.force_tick_delay = delay;
                             },
+                            RenderToServerThreadMsg::LoadMapFile(filepath) => {
+                                let file = fs::File::open(&filepath);
+                                if file.is_err() {
+                                    error!("Failed to read map file {}: {}", filepath, file.err().unwrap());
+                                }
+                                else {
+                                    let mut data = String::new();
+                                    match file.unwrap().read_to_string(&mut data) {
+                                        Err(err) => {
+                                            error!("Failed to read map file {}: {}", filepath, err)
+                                        },
+                                        Ok(_) => {
+                                            game_state.load_rooms_from_json(&data);
+                                        }
+                                    }
+                                }
+                            },
                             RenderToServerThreadMsg::RequestFullState => {
                                 tx_state.send(game_state.clone());
                             }
@@ -91,6 +111,10 @@ async fn main() {
         }
         info!("SERVER: Server thread stopping");
     });
+
+    debug!("Loading map data");
+
+    tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()));
 
     debug!("Setup render-thread gamestate");
     let mut render_gamestate = GameState::new();

@@ -2,6 +2,8 @@
 
 use std::{collections::VecDeque, time::Instant};
 
+use anyhow::{Error, anyhow, bail, ensure};
+use log::{debug, error};
 use rand::SeedableRng;
 
 use crate::{game::{*, room::*}, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
@@ -30,7 +32,7 @@ pub struct GameState {
     pub random: SmallRng,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 /// A small message sent from the render thread to the server thread.
 /// Used to update properties pertaining to the process that calls [GameState::tick] or request a full game state update.
 /// 
@@ -39,6 +41,7 @@ pub enum RenderToServerThreadMsg {
     Quit,
     Pause(bool),
     ForceTickDelay(u32),
+    LoadMapFile(String),
     RequestFullState,
 }
 
@@ -111,5 +114,58 @@ impl GameState {
                 todo!();
             }
         }
+    }
+
+    /// Modify [Room] objects inside [Self::rooms] to match the contents of a JSON file,
+    /// in the format found on the ScreepsPlus map download page: <https://maps.screepspl.us/>.
+    /// See assets/mmo-shard3.json for an example.
+    /// 
+    /// ## Arguments
+    /// 
+    /// - `data`: String containing the JSON object to be parsed.
+    pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
+        debug!("Loading map data from JSON");
+
+        let jsonroot;
+        match serde_json::from_str::<serde_json::Value>(&data) {
+            Err(err) => {
+                bail!("Malformed JSON: {}", err);
+            },
+            Ok(v) => jsonroot=v,
+        }
+        let rooms;
+        match jsonroot["rooms"].as_array() {
+            None => {
+                bail!("Malformed room data, expected 'rooms' key at root level.");
+            },
+            Some(v) => rooms = v
+        }
+        for room in rooms {
+            let room_name;
+            match room["room"].as_str() {
+                None => {
+                    bail!("Malformed room data, expected 'room' key within room data to contain string.");
+                }, 
+                Some(v) => room_name = v,
+            }
+            let terrain; match room["terrain"].as_str() {
+                None => {
+                    bail!("Malformed terrain data, expected 'terrain' key within room data to contain string.");
+                }, 
+                Some(v) => terrain = v
+            };
+
+            let res = Room::pos_from_name(room_name);
+            ensure!(res.is_ok(), "Failed to parse room name {}: {}", room_name, res.err().unwrap()); // Safe unwrap
+            let (posx, posy) = res.unwrap(); // Safe unwrap
+            let posx = posx as usize;
+            let posy = posy as usize;
+
+            ensure!(posy >= self.rooms.len(), "Y coordinate of room {} exceeded limits.", room_name);
+            ensure!(posx < self.rooms[posy].len(), "X coordinate of room {} exceeded limits.", room_name);
+
+            self.rooms[posy][posx].terrain_from_string(terrain);
+        }
+        Ok(())
     }
 }

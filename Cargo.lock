@@ -259,6 +259,7 @@ dependencies = [
  "macroquad",
  "rand 0.10.3",
  "seahash",
+ "serde_json",
 ]
 
 [[package]]

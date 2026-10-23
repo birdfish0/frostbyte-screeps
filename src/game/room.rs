@@ -109,4 +109,25 @@ impl Room {
 
         return Ok((ret0, ret1));
     }
+
+    /// Fill in the terrain data for this room based on a terrain string, imported from a JSON file.
+    /// 
+    /// See [crate::GameState::load_rooms_from_json] for more information on the format of the string.
+    pub fn terrain_from_string(&mut self, terrain: &str) -> Result<(), Error> {
+        let mut chars = terrain.chars();
+        for y in 0..50 {
+            let mut row = 0u128;
+            for x in 0..50 {
+                let t = chars.next();
+                ensure!(t.is_some(), "Expected more terrain data, got EOF");
+                let t = t.unwrap();
+                ensure!(t == '0' || t == '1' || t == '2', "Expected 0, 1, or 2, got {}.", t);
+                row |= t.to_digit(10).unwrap() as u128; // Safe unwrap
+                row <<= 2;
+            }
+            row >>= 2;
+            self.terrain[y] = row;
+        }
+        Ok(())
+    }
 }
