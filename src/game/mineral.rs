@@ -21,7 +21,7 @@ pub struct MineralRefreshEvent {
 
 impl EventCallback for MineralRefreshEvent {
     fn callback(&self, game_state: &mut GameState, event_queue: &mut EventQueue) {
-        let src = game_state.mineral_sources.get_mut().unwrap().get_mut(&self.id).unwrap();
+        let src = game_state.mineral_sources.get_mut(&self.id).unwrap();
 
         src.refresh(&mut game_state.random, game_state.tick);
 
