@@ -34,7 +34,7 @@ async fn main() {
     let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new()).expect("Invalid logger configuration");
     log4rs::init_config(config);
 
-    info!("Logger initialized");
+    debug!("Logger initialized");
 
     let font = load_ttf_font("assets/CutiveMono-Regular.ttf")
         .await
