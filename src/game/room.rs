@@ -1,6 +1,6 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
-use anyhow::Error;
+use anyhow::{Error, anyhow, ensure};
 
 /// Contains data pertaining to a room on the map.
 /// 
@@ -49,29 +49,20 @@ impl Room {
 
         // -------------------------------- East / West
         let ew = chars.next();
-        if ew.is_none() {
-            return Err(Error::msg(format!("Failed to parse room name {}: expected E or W in position 0, got EOF", name)));
-        }
+        ensure!(ew.is_some(), "Failed to parse room name {}: expected E or W in position 0, got EOF", name);
         let ew = ew.unwrap();
-        if ew != 'E' && ew != 'W' {
-            return Err(Error::msg(format!("Failed to parse room name {}: expected E or W in position 0, got {}", name, ew)));
-        }
+        ensure!(ew == 'E' && ew == 'W', "Failed to parse room name {}: expected E or W in position 0, got {}", name, ew);
 
         // -------------------------------- First digit
         let n1 = chars.next();
-        if n1.is_none() {
-            return Err(Error::msg(format!("Failed to parse room name {}: expected digit in position 1, got EOF", name)));
-        }
+        ensure!(n1.is_some(), "Failed to parse room name {}: expected digit in position 1, got EOF", name);
         let n1 = n1.unwrap();
-        if !n1.is_numeric() {
-            return Err(Error::msg(format!("Failed to parse room name {}: expected digit in position 1, got {}", name, n1)));
-        }
+        ensure!(n1.is_numeric(), "Failed to parse room name {}: expected digit in position 1, got {}", name, n1);
 
         // -------------------------------- Second digit -OR- North / South
         let n2 = chars.next();
-        if n2.is_none() {
-            return Err(Error::msg(format!("Failed to parse room name {}: expected digit or N or S in position 2, got EOF", name)));
-        }
+        ensure!(n2.is_some(), "Failed to parse room name {}: expected digit or N or S in position 2, got EOF", name);
+        
         let n2 = n2.unwrap();
 
         if n2.is_numeric() {
@@ -84,18 +75,14 @@ impl Room {
                 ns = n3;
             }
             else {
-                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 3, got EOF", name)));
+                return Err(anyhow!("Failed to parse room name {}: expected N or S in position 3, got EOF", name));
             }
-            if ns != 'N' && ns != 'S' {
-                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 3, got {}", name, ns)));
-            }
+            ensure!(ns == 'N' || ns == 'S', "Failed to parse room name {}: expected N or S in position 3, got {}", name, ns);
         } else {
             ret0 = n1.to_digit(10).unwrap() as u8; // safe unwrap
 
             ns = n2;
-            if ns != 'N' && ns != 'S' {
-                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 2, got {}", name, ns)));
-            }
+            ensure!(ns == 'N' || ns == 'S', "Failed to parse room name {}: expected N or S in position 2, got {}", name, ns);
         }
 
         // -------------------------------- Final digits
@@ -103,10 +90,9 @@ impl Room {
         let mut remainder_str: String = chars.collect();
 
         let remainder = u8::from_str_radix(&remainder_str, 10);
-        if remainder.is_err() {
-            return Err(Error::msg(format!("Failed to parse room name {}: remainder ({}) is not number: {}",
-                name, remainder_str, remainder.err().unwrap())));
-        }
+        ensure!(remainder.is_ok(),
+            "Failed to parse room name {}: remainder ({}) is not number: {}",
+                name, remainder_str, remainder.err().unwrap());
         let remainder = remainder.unwrap();
 
         let ret0 = match ew {
