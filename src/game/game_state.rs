@@ -60,6 +60,7 @@ impl GameState {
 
     pub fn process_intent(&mut self, intent: Intent) {
         match intent {
+            Intent::Nothing => (),
             Intent::Move(creepid, dir) => {
                 todo!();
             }

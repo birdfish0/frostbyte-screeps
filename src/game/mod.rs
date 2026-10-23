@@ -32,6 +32,22 @@ pub struct Creep {
     pub spawning: bool,
 }
 
+impl Default for Creep {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            name: "".to_owned(),
+            pos: RoomPos::default(),
+            hits: 0,
+            hits_max: 0,
+            parts: [CreepPart::default(); 50],
+            num_parts: 0,
+            fatigue: 0,
+            spawning: false,
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Room {
     pub posx: u8,
@@ -45,7 +61,23 @@ pub struct Room {
     pub construction_sites: Vec<u64>, // IDs
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+impl Default for Room {
+    fn default() -> Self {
+        Self {
+            posx: 0,
+            posy: 0,
+            creeps: Vec::new(),
+            terrain: [0; 50],
+            structures: Vec::new(),
+            energy_sources: Vec::new(),
+            mineral_source: None,
+            commodity_source: None,
+            construction_sites: Vec::new(),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct RoomPos {
     pub room_x: u8,
     pub room_y: u8,
@@ -53,7 +85,7 @@ pub struct RoomPos {
     pub pos_y: u8,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct EnergySource {
     pub id: u64,
     pub pos: RoomPos,
@@ -61,7 +93,7 @@ pub struct EnergySource {
     pub refresh_timer: u128,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct CommoditySource {
     pub id: u64,
     pub commodity_type: ResourceType,
@@ -71,15 +103,16 @@ pub struct CommoditySource {
     pub density: MineralDensity,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub enum MineralDensity {
+    #[default]
     Low,
     Medium,
     High,
     Ultra,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct Structure {
     pub id: u64,
     pub structure_type: StructureType,
@@ -88,7 +121,7 @@ pub struct Structure {
     pub hits_max: u32,
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct ConstructionSite {
     pub id: u64,
     pub structure_type: StructureType,
@@ -96,7 +129,7 @@ pub struct ConstructionSite {
     pub energy: u64,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Store {
     pub contents: HashMap<ResourceType, u32>,
     pub single_type: Option<ResourceType>,
