@@ -42,7 +42,7 @@ async fn main() {
     let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new()).expect("Invalid logger configuration");
     log4rs::init_config(config);
 
-    debug!("Logger initialized");
+    info!("Logger initialized");
 
     let font = load_ttf_font("assets/CutiveMono-Regular.ttf")
         .await
@@ -51,13 +51,13 @@ async fn main() {
     let mut start_time = Instant::now();
     let mut durations = RecursiveAvg::new(vec![50, 20, 10], false);
 
-    debug!("Setup channels");
+    info!("Setup channels");
     
     let (tx_state, rx_state) = bounded::<GameState>(1);
     let (tx, rx_srv) = unbounded::<RenderToServerThreadMsg>();
     let (tx_main_state, rx_srv_state) = bounded::<GameState>(1);
 
-    debug!("Setup server thread");
+    info!("Setup server thread");
 
     let server_thread = thread::spawn(move || {
         let mut game_state = GameState::new();
@@ -112,11 +112,11 @@ async fn main() {
         info!("SERVER: Server thread stopping");
     });
 
-    debug!("Loading map data");
+    info!("Loading map data");
 
     tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()));
 
-    debug!("Setup render-thread gamestate");
+    info!("Setup render-thread gamestate");
     let mut render_gamestate = GameState::new();
 
     let mut game_state_update_interval: f32 = 0.1;

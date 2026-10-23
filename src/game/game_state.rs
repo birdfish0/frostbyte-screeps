@@ -3,7 +3,7 @@
 use std::{collections::VecDeque, time::Instant};
 
 use anyhow::{Error, anyhow, bail, ensure};
-use log::{debug, error};
+use log::{debug, error, info};
 use rand::SeedableRng;
 
 use crate::{game::{*, room::*}, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
@@ -124,7 +124,7 @@ impl GameState {
     /// 
     /// - `data`: String containing the JSON object to be parsed.
     pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
-        debug!("Loading map data from JSON");
+        info!("Loading map data from JSON");
 
         let jsonroot;
         match serde_json::from_str::<serde_json::Value>(&data) {
