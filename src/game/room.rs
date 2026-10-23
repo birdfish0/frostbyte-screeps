@@ -1,5 +1,8 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
+/// Contains data pertaining to a room on the map.
+/// 
+/// Does not contain the actual data of most of the objects within the room, only their ID.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Room {
     pub posx: u8,
