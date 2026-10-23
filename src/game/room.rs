@@ -1,6 +1,6 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
-use anyhow::{Error, anyhow, ensure};
+use anyhow::{Error, anyhow, bail, ensure};
 
 /// Contains data pertaining to a room on the map.
 /// 
@@ -75,7 +75,7 @@ impl Room {
                 ns = n3;
             }
             else {
-                return Err(anyhow!("Failed to parse room name {}: expected N or S in position 3, got EOF", name));
+                bail!("Failed to parse room name {}: expected N or S in position 3, got EOF", name);
             }
             ensure!(ns == 'N' || ns == 'S', "Failed to parse room name {}: expected N or S in position 3, got {}", name, ns);
         } else {
