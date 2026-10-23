@@ -82,7 +82,7 @@ impl GameState {
         }
     }
 
-    /// Run a single tick of the game. [`event_queue`] is provided separately here (instead of being stored in the GameState directly) because
+    /// Run a single tick of the game. `event_queue` is provided separately here (instead of being stored in the GameState directly) because
     /// some events need to modify the [GameState], which is difficult to do when the event queue is contained within the GameState object.
     pub fn tick(&mut self, event_queue: &mut EventQueue) {
         let tick_duration = self.last_tick_time.elapsed();
