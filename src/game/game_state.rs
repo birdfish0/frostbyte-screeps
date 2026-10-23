@@ -68,7 +68,7 @@ impl GameState {
             paused: false,
             tick: 0,
             force_tick_delay: 0,
-            tick_durations: RecursiveAvg::new(vec![200, 10, 100], true),
+            tick_durations: RecursiveAvg::new(vec![256, 32, 32], true),
             last_tick_time: Instant::now(),
             intents: VecDeque::new(),
             rooms: rooms,
