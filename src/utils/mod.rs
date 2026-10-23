@@ -4,6 +4,7 @@ pub mod event_queue;
 pub mod icon;
 pub mod recursive_avg;
 
+use log::error;
 use rand::{Rng, RngExt};
 
 /// Choose a random value from `vals` and return it.
@@ -21,10 +22,12 @@ where
     T: Copy,
 {
     if vals.len() != weights.len() {
+        error!("utils::random_choice panicked: Number of values should equal number of weights. (currently {} and {})", vals.len(), weights.len());
         panic!("Number of values should equal number of weights.");
     }
     let total_weight: u32 = weights.iter().sum();
     if total_weight == 0 {
+        error!("utils::random_choice panicked: Sum of all weights must not equal zero. (was provided with {} weights)", weights.len());
         panic!("Sum of all weights must not equal zero.");
     }
     let mut now_weight = 0;

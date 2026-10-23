@@ -1,5 +1,7 @@
 //! Contains the [RecursiveAvg] struct and its implementation.
 
+use log::error;
+
 /// Uses multiple lists to keep track of the rolling average over a very large window size without storing the entire dataset.
 ///
 /// Note: The following explanations assume a depth of greater than 1.
@@ -71,9 +73,11 @@ impl RecursiveAvg {
     /// Panics if `num_els` contains a 0.
     pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
         if num_els.is_empty() {
+            error!("utils::recursive_avg::RecursiveAvg::new panicked: num_els must not be empty.");
             panic!("num_els must not be empty.");
         }
         if num_els.contains(&0) {
+            error!("utils::recursive_avg::RecursiveAvg::new panicked: num_els must not contain a 0. (num_els: {:?})", num_els);
             panic!("num_els must not contain a 0.");
         }
 
