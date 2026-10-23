@@ -46,7 +46,7 @@ async fn main() {
         .unwrap();
 
     let mut start_time = Instant::now();
-    let mut durations = RecursiveAvg::new(vec![20, 50, 10], false);
+    let mut durations = RecursiveAvg::new(vec![50, 20, 10], false);
 
     debug!("Setup channels");
     
@@ -143,10 +143,11 @@ async fn main() {
         draw_rectangle(0.0, 0.0, screen_width(), 30.0, UI_HIGH_BG_COLOR);
         draw_text_ex(
             format!(
-                "tick {:0>12} | {:0>12}ns/t ({:0>8}tps) | {:0>3}fps",
+                "tick {:0>12} | {:0>12}ns/t ({:0>8}tps) | {:0>3}fps (avg. {:0>3})",
                 render_gamestate.tick,
                 render_gamestate.tick_durations.get(),
                 1000000000 / render_gamestate.tick_durations.get().max(1),
+                1000000000 / frame_duration.as_nanos().max(1),
                 1000000000 / durations.get().max(1)
             ),
             20.0,
