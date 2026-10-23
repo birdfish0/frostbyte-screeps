@@ -2,6 +2,8 @@
 #![doc = include_str!("../README.md")]
 #![allow(unused)]
 
+use log::{error, info};
+use log4rs::config::Deserializers;
 use macroquad::prelude::*;
 use std::time::Instant;
 
@@ -29,12 +31,19 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new()).expect("Invalid logger configuration");
+    log4rs::init_config(config);
+
+    info!("Logger initialized");
+
     let font = load_ttf_font("assets/CutiveMono-Regular.ttf")
         .await
         .unwrap();
 
     let mut start_time = Instant::now();
     let mut durations = RecursiveAvg::new(vec![20, 5], false);
+
+    info!("Init done");
 
     loop {
         let end_time = Instant::now();

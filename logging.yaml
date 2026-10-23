@@ -1,0 +1,14 @@
+root:
+  level: debug
+  appenders:
+    - file_appender
+    - console_appender
+appenders:
+  file_appender:
+    kind: file
+    path: latest.log
+    append: false
+  console_appender:
+    kind: console
+    target: stdout
+    tty_only: false

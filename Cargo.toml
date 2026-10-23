@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.104"
+log = "0.4.34"
+log4rs = {version="1.4.0", features=["console_appender", "file_appender"]}
 macroquad = "0.4.16"
 rand = "0.10.3"
 seahash = "4.1.0"
