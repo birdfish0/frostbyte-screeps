@@ -4,7 +4,7 @@ use std::{collections::VecDeque, time::Instant};
 
 use rand::SeedableRng;
 
-use crate::{game::*, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
+use crate::{game::{*, room::*}, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
 
 #[derive(Debug, Clone)]
 /// An object that represents the current state of the game.
