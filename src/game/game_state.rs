@@ -8,6 +8,7 @@ use crate::{game::*, utils::event_queue};
 pub struct GameState {
     pub paused: bool,
     pub tick: u128,
+    pub force_tick_delay: u32,
     pub intents: Vec<Intent>,
     pub rooms: Vec<Vec<Room>>,
     pub creeps: HashMap<u64, Creep>,
@@ -40,6 +41,7 @@ impl GameState {
         Self{
             paused: false,
             tick: 0,
+            force_tick_delay: 0,
             intents: Vec::new(),
             rooms: rooms,
             creeps: HashMap::new(),
