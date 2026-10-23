@@ -21,7 +21,6 @@ pub struct GameState {
     pub mineral_sources: HashMap<u64, MineralSource>,
     pub commodity_sources: HashMap<u64, CommoditySource>,
     pub random: SmallRng,
-    pub event_queue: EventQueue,
 }
 
 impl GameState {
@@ -58,7 +57,6 @@ impl GameState {
             mineral_sources: HashMap::new(),
             commodity_sources: HashMap::new(),
             random: SmallRng::seed_from_u64(4),
-            event_queue: EventQueue::new(),
         }
     }
 
