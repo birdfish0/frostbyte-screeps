@@ -16,6 +16,37 @@ pub mod enums;
 pub mod mineral;
 pub mod game_state;
 
+#[derive(Copy, Clone, Debug, Default)]
+pub struct DroppedResource {
+    id: u64,
+    pos: RoomPos,
+    resource_type: ResourceType,
+    amount: u32,
+    last_amount_at_decay_change: u32,
+    decay_change_time: u128,
+    decay_rate: u32,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Ruin {
+    id: u64,
+    pos: RoomPos,
+    store: Store,
+    decay_timer: u128,
+    death_time: u128,
+    structure: Structure,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Tombstone {
+    id: u64,
+    pos: RoomPos,
+    store: Store,
+    decay_timer: u128,
+    death_time: u128,
+    creep: Creep,
+}
+
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Creep {
     pub id: u64,
