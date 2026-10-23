@@ -35,6 +35,13 @@ impl Default for Room {
 }
 
 impl Room {
+    /// Get the coordinates of the room with respect to the top-left corner,
+    /// in (x, y) format where (0,0) is the top-leftmost room, from a room name.
+    /// 
+    /// ## Arguments
+    /// 
+    /// - `name`: The room name, formatted as "<E/W><X><N/S><Y>". For example, "E34N12", or "W4S0".
+    /// Note that E0S0, E0N0, W0S0, and W0N0 are not the same room, they are adjascent rooms in the center of the map.
     pub fn pos_from_name(name: &str) -> Result<(u8, u8), Error> {
         let mut chars = name.chars();
         let mut ret0: u8 = 0;
