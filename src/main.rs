@@ -46,7 +46,7 @@ async fn main() {
         .unwrap();
 
     let mut start_time = Instant::now();
-    let mut durations = RecursiveAvg::new(vec![20, 5], false);
+    let mut durations = RecursiveAvg::new(vec![20, 50, 10], false);
 
     debug!("Setup channels");
     

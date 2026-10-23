@@ -1,11 +1,14 @@
 //! Contains the [RecursiveAvg] struct and its implementation.
 
-use log::error;
+use log::{error, info};
 
 /// Uses multiple lists to keep track of the rolling average over a very large window size without storing the entire dataset.
 ///
 /// Note: The following explanations assume a depth of greater than 1.
 /// This struct should not be used in cases where `depth = 1` and should be replaced with a normal rolling average struct.
+/// 
+/// If the number of data points added is less than the size of the rolling window,
+/// the average (with imprecision, see [`get`][Self::get]) of all the data points is taken.
 ///
 /// ## Principle
 ///
@@ -47,6 +50,22 @@ pub struct RecursiveAvg {
     /// Private. Please re-create the struct if you wish to modify this value.
     /// It is calculated using `virtual_size = num_els[0] * num_els[1] * ... * num_els[num_els.len() - 1]`.
     virtual_size: u128,
+    /// Keeps track of the number of data points added before enough data points are added to fill the rolling window.
+    /// 
+    /// Used in place of [`virtual_size`][Self::virtual_size] in the calculation of the average value when `sum_mode = true`.
+    current_window_size: u128,
+    /// The index (`lists[lowest_filled_list]`) of the list with the lowest index that has had an element added to it.
+    /// 
+    /// This is the list that will be used in average calculations, and should be 0 once the rolling window has been filled
+    /// enough to place a data point into `lists[0]`.
+    lowest_filled_list: usize,
+    /// The degree to which `lists[lowest_filled_list]` has been filled.
+    /// 
+    /// When calculating an average with `sum_mode = false`, the first `lowest_filled_list_amount`
+    /// elements of `lists[lowest_filled_list]` are averaged.
+    /// 
+    /// Not used when `sum_mode = true`.
+    lowest_filled_list_amount: usize,
     /// Determines how the average is calculated, and the values added to `lists[1]` and on.
     /// When `sum_mode` is true, `lists[1]` contains the sum of `lists[0]` values.
     /// This improves the accuracy of the final result, but means that
@@ -95,6 +114,9 @@ impl RecursiveAvg {
         RecursiveAvg {
             lists,
             progressions: vec![0; depth],
+            current_window_size: 0,
+            lowest_filled_list: depth-1,
+            lowest_filled_list_amount: 0,
             sums: vec![0; depth],
             num_els,
             virtual_size,
@@ -102,16 +124,20 @@ impl RecursiveAvg {
         }
     }
 
-    /// Add a value to the dataset. Equivalent to `add_at_depth(value, 0)`.
+    /// Add a value to the dataset and increment [`Self::current_window_size`] if it is not equal to [`Self::virtual_size`].
     pub fn add(&mut self, value: u128) {
-        self.add_at_depth(value, 0);
+        if self.current_window_size < self.virtual_size {
+            self.current_window_size += 1;
+        }
+        self.add_at_depth(value, self.lists.len() - 1);
     }
 
-    /// Add a value to the list at depth `depth` and increment the corresponding index.
+    /// Add a value to the list at depth `depth` and increment the corresponding index, as well as update
+    /// [`Self::lowest_filled_list`] and [`Self::lowest_filled_list_amount`] accordingly.
     ///
     /// This should only be used with `depth = 0`, except internally to add the average (or sum) of each list to the next list.
     ///
-    /// Returns when `depth` is greater than the depth of the struct, for easy recursion.
+    /// Returns when `depth` is greater than the depth of the struct.
     fn add_at_depth(&mut self, value: u128, depth: usize) {
         if depth >= self.lists.len() {
             return;
@@ -120,12 +146,23 @@ impl RecursiveAvg {
         self.lists[depth][self.progressions[depth]] = value;
         self.sums[depth] += value;
         self.progressions[depth] += 1;
+
+        if self.lowest_filled_list > depth {
+            self.lowest_filled_list = depth;
+            self.lowest_filled_list_amount = 0;
+        }
+        if self.lowest_filled_list == depth && self.lowest_filled_list_amount < self.num_els[depth] {
+            self.lowest_filled_list_amount += 1;
+        }
+
         if self.progressions[depth] >= self.num_els[depth] {
             self.progressions[depth] = 0;
-            if self.sum_mode {
-                self.add_at_depth(self.sums[depth], depth + 1);
-            } else {
-                self.add_at_depth(self.sums[depth] / self.num_els[depth] as u128, depth + 1);
+            if depth != 0 {
+                if self.sum_mode {
+                    self.add_at_depth(self.sums[depth], depth - 1);
+                } else {
+                    self.add_at_depth(self.sums[depth] / self.num_els[depth] as u128, depth - 1);
+                }
             }
         }
     }
@@ -134,14 +171,23 @@ impl RecursiveAvg {
     ///
     /// This value is affected by integer division precision,
     /// and may be less precise than excpected in `sum_mode = false` (see docs on `sum_mode` for the struct).
-    ///
-    /// Note that if the number of data points added so far is less than `self.virtual_size`,
-    /// the return value will be inaccurate as the rest of the data points start at 0 until `lists[depth - 1]` is fully filled.
+    /// 
+    /// Returns 0 if no data points have been added.
     pub fn get(&self) -> u128 {
         if self.sum_mode {
-            self.sums[self.lists.len() - 1] / self.virtual_size
+            if self.current_window_size == 0 {
+                0
+            }
+            else {
+                self.sums[self.lowest_filled_list] / self.current_window_size
+            }
         } else {
-            self.sums[self.lists.len() - 1] / self.num_els[self.lists.len() - 1] as u128
+            if self.lowest_filled_list_amount == 0 {
+                0
+            }
+            else {
+                self.sums[self.lowest_filled_list] / self.lowest_filled_list_amount as u128
+            }
         }
     }
 }
