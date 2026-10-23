@@ -45,80 +45,82 @@ impl Room {
     pub fn pos_from_name(name: &str) -> Result<(u8, u8), Error> {
         let mut chars = name.chars();
         let mut ret0: u8 = 0;
-        let mut ns = 'N';
-        loop {
-            // -------------------------------- East / West
-            let ew = chars.next();
-            if ew.is_none() {
-                break;
-            }
-            let ew = ew.unwrap();
-            if ew != 'E' && ew != 'W' {
-                break;
-            }
+        let mut ns;
 
-            // -------------------------------- First digit
-            let n1 = chars.next();
-            if n1.is_none() {
-                break;
-            }
-            let n1 = n1.unwrap();
-            if !n1.is_numeric() {
-                break;
-            }
-
-            // -------------------------------- Second digit -OR- North / South
-            let n2 = chars.next();
-            if n2.is_none() {
-                break;
-            }
-            let n2 = n2.unwrap();
-
-            if n2.is_numeric() {
-                let dig1 = n1.to_digit(10).unwrap(); // safe unwrap
-                let dig2 = n2.to_digit(10).unwrap(); // safe unwrap
-
-                ret0 = (dig1 * 10 + dig2) as u8;
-
-                if let Some(n3) = chars.next() {
-                    ns = n3;
-                }
-                else {
-                    break;
-                }
-
-            } else {
-                ret0 = n1.to_digit(10).unwrap() as u8; // safe unwrap
-
-                ns = n2;
-            }
-            if ns != 'N' && ns != 'S' {
-                break;
-            }
-
-            // -------------------------------- Final digits
-
-            let mut remainder: String = chars.collect();
-
-            let remainder = u8::from_str_radix(&remainder, 10);
-            if remainder.is_err() { break };
-            let remainder = remainder.unwrap();
-
-            let ret0 = match ew {
-                'E' => ret0 + 61,
-                'W' => 60 - ret0,
-                _ => 0,
-            };
-
-            let ret1 = match ns {
-                'N' => remainder + 61,
-                'S' => 60 - remainder,
-                _ => 0,
-            };
-
-            return Ok((ret0, ret1));
+        // -------------------------------- East / West
+        let ew = chars.next();
+        if ew.is_none() {
+            return Err(Error::msg(format!("Failed to parse room name {}: expected E or W in position 0, got EOF", name)));
+        }
+        let ew = ew.unwrap();
+        if ew != 'E' && ew != 'W' {
+            return Err(Error::msg(format!("Failed to parse room name {}: expected E or W in position 0, got {}", name, ew)));
         }
 
-        Err(Error::msg(format!("Failed to parse room name: {}", name)))
+        // -------------------------------- First digit
+        let n1 = chars.next();
+        if n1.is_none() {
+            return Err(Error::msg(format!("Failed to parse room name {}: expected digit in position 1, got EOF", name)));
+        }
+        let n1 = n1.unwrap();
+        if !n1.is_numeric() {
+            return Err(Error::msg(format!("Failed to parse room name {}: expected digit in position 1, got {}", name, n1)));
+        }
+
+        // -------------------------------- Second digit -OR- North / South
+        let n2 = chars.next();
+        if n2.is_none() {
+            return Err(Error::msg(format!("Failed to parse room name {}: expected digit or N or S in position 2, got EOF", name)));
+        }
+        let n2 = n2.unwrap();
+
+        if n2.is_numeric() {
+            let dig1 = n1.to_digit(10).unwrap(); // safe unwrap
+            let dig2 = n2.to_digit(10).unwrap(); // safe unwrap
+
+            ret0 = (dig1 * 10 + dig2) as u8;
+
+            if let Some(n3) = chars.next() {
+                ns = n3;
+            }
+            else {
+                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 3, got EOF", name)));
+            }
+            if ns != 'N' && ns != 'S' {
+                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 3, got {}", name, ns)));
+            }
+        } else {
+            ret0 = n1.to_digit(10).unwrap() as u8; // safe unwrap
+
+            ns = n2;
+            if ns != 'N' && ns != 'S' {
+                return Err(Error::msg(format!("Failed to parse room name {}: expected N or S in position 2, got {}", name, ns)));
+            }
+        }
+
+        // -------------------------------- Final digits
+
+        let mut remainder_str: String = chars.collect();
+
+        let remainder = u8::from_str_radix(&remainder_str, 10);
+        if remainder.is_err() {
+            return Err(Error::msg(format!("Failed to parse room name {}: remainder ({}) is not number: {}",
+                name, remainder_str, remainder.err().unwrap())));
+        }
+        let remainder = remainder.unwrap();
+
+        let ret0 = match ew {
+            'E' => ret0 + 61,
+            'W' => 60 - ret0,
+            _ => 0,
+        };
+
+        let ret1 = match ns {
+            'N' => remainder + 61,
+            'S' => 60 - remainder,
+            _ => 0,
+        };
+
+        return Ok((ret0, ret1));
     }
 }
