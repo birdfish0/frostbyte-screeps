@@ -88,7 +88,14 @@ async fn main() {
                 thread::sleep(Duration::from_nanos(game_state.force_tick_delay as u64));
             }
         }
+        info!("SERVER: Server thread stopping");
     });
+
+    debug!("Setup render-thread gamestate");
+    let mut render_gamestate = GameState::new();
+
+    let mut game_state_update_interval: f32 = 0.1;
+    let mut last_game_state_update: Instant = Instant::now();
 
     info!("Init done");
 
@@ -96,6 +103,27 @@ async fn main() {
         let end_time = Instant::now();
         let frame_duration = end_time.duration_since(start_time);
         durations.add(frame_duration.as_nanos());
+
+        if last_game_state_update.elapsed().as_secs_f32() > game_state_update_interval {
+            last_game_state_update = Instant::now();
+            tx.send(RenderToServerThreadMsg::RequestFullState);
+        }
+
+        let got_game_state;
+        if !rx_state.is_empty() {
+            match rx_state.recv() {
+                Ok(state) => {
+                    render_gamestate = state;
+                    got_game_state = true;
+                },
+                Err(err) => {
+                    got_game_state = false;
+                    error!("Error receiving game state from server thread: {}", err);
+                }
+            }
+        } else {
+            got_game_state = false;
+        }
 
         clear_background(WORLD_BG_COLOR);
 
@@ -129,6 +157,9 @@ async fn main() {
                 ..Default::default()
             },
         );
+        if got_game_state {
+            draw_rectangle(0.0, 0.0, 5.0, 5.0, GREEN);
+        }
 
         start_time = Instant::now();
 
