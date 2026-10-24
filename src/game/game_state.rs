@@ -6,11 +6,14 @@ use anyhow::{Error, anyhow, bail, ensure};
 use log::{debug, error, info};
 use rand::SeedableRng;
 
-use crate::{game::{*, room::*}, utils::{hash::SeaHashBuilder, event_queue, recursive_avg::RecursiveAvg}};
+use crate::{
+    game::{room::*, *},
+    utils::{event_queue, hash::SeaHashBuilder, recursive_avg::RecursiveAvg},
+};
 
 #[derive(Debug, Clone)]
 /// An object that represents the current state of the game.
-/// 
+///
 /// It contains the actual data for most objects that are referenced by ID elsewhere.
 pub struct GameState {
     pub paused: bool,
@@ -35,7 +38,7 @@ pub struct GameState {
 #[derive(PartialEq, Eq, Clone, Debug)]
 /// A small message sent from the render thread to the server thread.
 /// Used to update properties pertaining to the process that calls [GameState::tick] or request a full game state update.
-/// 
+///
 /// Note that full game state overrides are sent through their own channel, to keep these messages small in size.
 pub enum RenderToServerThreadMsg {
     Quit,
@@ -67,7 +70,7 @@ impl GameState {
 
         let mut rng = SmallRng::seed_from_u64(4);
 
-        Self{
+        Self {
             paused: false,
             tick: 0,
             force_tick_delay: 0,
@@ -104,7 +107,7 @@ impl GameState {
     }
 
     /// Process an [Intent] and change the game state accordingly.
-    /// 
+    ///
     /// Note that some intents may return silently if they fail at this stage,
     /// such as [Move][Intent::Move], if the target position becomes blocked during a move.
     pub fn process_intent(&mut self, intent: Intent) {
@@ -119,9 +122,9 @@ impl GameState {
     /// Modify [Room] objects inside [Self::rooms] to match the contents of a JSON file,
     /// in the format found on the ScreepsPlus map download page: <https://maps.screepspl.us/>.
     /// See assets/mmo-shard3.json for an example.
-    /// 
+    ///
     /// ## Arguments
-    /// 
+    ///
     /// - `data`: String containing the JSON object to be parsed.
     pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
         info!("Loading map data from JSON");
@@ -130,39 +133,57 @@ impl GameState {
         match serde_json::from_str::<serde_json::Value>(&data) {
             Err(err) => {
                 bail!("Malformed JSON: {}", err);
-            },
-            Ok(v) => jsonroot=v,
+            }
+            Ok(v) => jsonroot = v,
         }
         let rooms;
         match jsonroot["rooms"].as_array() {
             None => {
                 bail!("Malformed room data, expected 'rooms' key at root level.");
-            },
-            Some(v) => rooms = v
+            }
+            Some(v) => rooms = v,
         }
         for room in rooms {
             let room_name;
             match room["room"].as_str() {
                 None => {
-                    bail!("Malformed room data, expected 'room' key within room data to contain string.");
-                }, 
+                    bail!(
+                        "Malformed room data, expected 'room' key within room data to contain string."
+                    );
+                }
                 Some(v) => room_name = v,
             }
-            let terrain; match room["terrain"].as_str() {
+            let terrain;
+            match room["terrain"].as_str() {
                 None => {
-                    bail!("Malformed terrain data, expected 'terrain' key within room data to contain string.");
-                }, 
-                Some(v) => terrain = v
+                    bail!(
+                        "Malformed terrain data, expected 'terrain' key within room data to contain string."
+                    );
+                }
+                Some(v) => terrain = v,
             };
 
             let res = Room::pos_from_name(room_name);
-            ensure!(res.is_ok(), "Failed to parse room name {}: {}", room_name, res.err().unwrap()); // Safe unwrap
+            ensure!(
+                res.is_ok(),
+                "Failed to parse room name {}: {}",
+                room_name,
+                res.err().unwrap()
+            ); // Safe unwrap
             let (posx, posy) = res.unwrap(); // Safe unwrap
             let posx = posx as usize;
             let posy = posy as usize;
 
-            ensure!(posy >= self.rooms.len(), "Y coordinate of room {} exceeded limits.", room_name);
-            ensure!(posx < self.rooms[posy].len(), "X coordinate of room {} exceeded limits.", room_name);
+            ensure!(
+                posy >= self.rooms.len(),
+                "Y coordinate of room {} exceeded limits.",
+                room_name
+            );
+            ensure!(
+                posx < self.rooms[posy].len(),
+                "X coordinate of room {} exceeded limits.",
+                room_name
+            );
 
             self.rooms[posy][posx].terrain_from_string(terrain);
         }

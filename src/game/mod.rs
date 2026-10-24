@@ -9,12 +9,12 @@ use crate::{
     utils::{self, event_queue::EventQueue},
 };
 use enums::*;
-use mineral::*;
 use game_state::*;
+use mineral::*;
 
 pub mod enums;
-pub mod mineral;
 pub mod game_state;
+pub mod mineral;
 pub mod room;
 
 #[derive(Copy, Clone, Debug, Default)]

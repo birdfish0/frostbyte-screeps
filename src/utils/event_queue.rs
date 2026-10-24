@@ -21,7 +21,12 @@ pub struct QueuedEvent {
 
 impl Debug for QueuedEvent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "QueuedEvent {{ tick: {}, callback: {:?} }}", self.tick, self.callback.type_id())
+        write!(
+            f,
+            "QueuedEvent {{ tick: {}, callback: {:?} }}",
+            self.tick,
+            self.callback.type_id()
+        )
     }
 }
 

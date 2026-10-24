@@ -1,9 +1,9 @@
 //! Provides general utility functions for use in the engine. See the documentation of specific submodules for more information.
 
 pub mod event_queue;
+pub mod hash;
 pub mod icon;
 pub mod recursive_avg;
-pub mod hash;
 
 use log::error;
 use rand::{Rng, RngExt};
@@ -23,12 +23,19 @@ where
     T: Copy,
 {
     if vals.len() != weights.len() {
-        error!("utils::random_choice panicked: Number of values should equal number of weights. (currently {} and {})", vals.len(), weights.len());
+        error!(
+            "utils::random_choice panicked: Number of values should equal number of weights. (currently {} and {})",
+            vals.len(),
+            weights.len()
+        );
         panic!("Number of values should equal number of weights.");
     }
     let total_weight: u32 = weights.iter().sum();
     if total_weight == 0 {
-        error!("utils::random_choice panicked: Sum of all weights must not equal zero. (was provided with {} weights)", weights.len());
+        error!(
+            "utils::random_choice panicked: Sum of all weights must not equal zero. (was provided with {} weights)",
+            weights.len()
+        );
         panic!("Sum of all weights must not equal zero.");
     }
     let mut now_weight = 0;

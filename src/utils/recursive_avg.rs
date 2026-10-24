@@ -6,7 +6,7 @@ use log::{error, info};
 ///
 /// Note: The following explanations assume a depth of greater than 1.
 /// This struct should not be used in cases where `depth = 1` and should be replaced with a normal rolling average struct.
-/// 
+///
 /// If the number of data points added is less than the size of the rolling window,
 /// the average (with imprecision, see [`get`][Self::get]) of all the data points is taken.
 ///
@@ -51,19 +51,19 @@ pub struct RecursiveAvg {
     /// It is calculated using `virtual_size = num_els[0] * num_els[1] * ... * num_els[num_els.len() - 1]`.
     virtual_size: u128,
     /// Keeps track of the number of data points added before enough data points are added to fill the rolling window.
-    /// 
+    ///
     /// Used in place of [`virtual_size`][Self::virtual_size] in the calculation of the average value when `sum_mode = true`.
     current_window_size: u128,
     /// The index (`lists[lowest_filled_list]`) of the list with the lowest index that has had an element added to it.
-    /// 
+    ///
     /// This is the list that will be used in average calculations, and should be 0 once the rolling window has been filled
     /// enough to place a data point into `lists[0]`.
     lowest_filled_list: usize,
     /// The degree to which `lists[lowest_filled_list]` has been filled.
-    /// 
+    ///
     /// When calculating an average with `sum_mode = false`, the first `lowest_filled_list_amount`
     /// elements of `lists[lowest_filled_list]` are averaged.
-    /// 
+    ///
     /// Not used when `sum_mode = true`.
     lowest_filled_list_amount: usize,
     /// Determines how the average is calculated, and the values added to `lists[1]` and on.
@@ -96,7 +96,10 @@ impl RecursiveAvg {
             panic!("num_els must not be empty.");
         }
         if num_els.contains(&0) {
-            error!("utils::recursive_avg::RecursiveAvg::new panicked: num_els must not contain a 0. (num_els: {:?})", num_els);
+            error!(
+                "utils::recursive_avg::RecursiveAvg::new panicked: num_els must not contain a 0. (num_els: {:?})",
+                num_els
+            );
             panic!("num_els must not contain a 0.");
         }
 
@@ -115,7 +118,7 @@ impl RecursiveAvg {
             lists,
             progressions: vec![0; depth],
             current_window_size: 0,
-            lowest_filled_list: depth-1,
+            lowest_filled_list: depth - 1,
             lowest_filled_list_amount: 0,
             sums: vec![0; depth],
             num_els,
@@ -151,7 +154,8 @@ impl RecursiveAvg {
             self.lowest_filled_list = depth;
             self.lowest_filled_list_amount = 0;
         }
-        if self.lowest_filled_list == depth && self.lowest_filled_list_amount < self.num_els[depth] {
+        if self.lowest_filled_list == depth && self.lowest_filled_list_amount < self.num_els[depth]
+        {
             self.lowest_filled_list_amount += 1;
         }
 
@@ -171,21 +175,19 @@ impl RecursiveAvg {
     ///
     /// This value is affected by integer division precision,
     /// and may be less precise than excpected in `sum_mode = false` (see docs on `sum_mode` for the struct).
-    /// 
+    ///
     /// Returns 0 if no data points have been added.
     pub fn get(&self) -> u128 {
         if self.sum_mode {
             if self.current_window_size == 0 {
                 0
-            }
-            else {
+            } else {
                 self.sums[self.lowest_filled_list] / self.current_window_size
             }
         } else {
             if self.lowest_filled_list_amount == 0 {
                 0
-            }
-            else {
+            } else {
                 self.sums[self.lowest_filled_list] / self.lowest_filled_list_amount as u128
             }
         }

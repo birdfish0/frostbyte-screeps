@@ -1,7 +1,8 @@
 use rand::Rng;
 
 use crate::{
-    game::*, utils::event_queue::{self, EventCallback, QueuedEvent},
+    game::*,
+    utils::event_queue::{self, EventCallback, QueuedEvent},
 };
 
 #[derive(Clone, Debug)]
