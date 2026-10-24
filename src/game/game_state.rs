@@ -118,7 +118,7 @@ impl GameState {
     ///
     /// - `data`: String containing the JSON object to be parsed.
     pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
-        info!(
+        debug!(
             "{} Loading map data from JSON",
             if self.is_server { "SERVER: " } else { "" }
         );

@@ -3,7 +3,7 @@
 #![allow(unused)]
 
 use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
-use log::{error, info};
+use log::{error, info, debug};
 use log4rs::config::Deserializers;
 use macroquad::prelude::*;
 use std::fs;
@@ -48,24 +48,26 @@ async fn main() {
     
     macroquad::input::prevent_quit();
 
-    info!("Logger initialized");
+    debug!("Logger initialized");
 
-    info!("Setup channels");
+    info!("Begin init");
+
+    debug!("Setup channels");
 
     let (tx_state, rx_state) = bounded::<GameState>(1);
     let (tx, rx_srv) = unbounded::<RenderToServerThreadMsg>();
     let (tx_state_override, rx_state_override) = bounded::<GameState>(1);
 
-    info!("Setup server thread");
+    debug!("Setup server thread");
 
     let server_thread =
         thread::spawn(move || server::run_loop(rx_srv, tx_state, rx_state_override));
 
-    info!("Loading map data");
+    debug!("Requesting map data load");
 
     tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()));
 
-    info!("Setup render-thread");
+    debug!("Setup render-thread");
 
     let mut render_state = RenderState::new().await;
 
@@ -76,4 +78,6 @@ async fn main() {
         .await;
 
     server_thread.join();
+
+    info!("Stop complete");
 }
