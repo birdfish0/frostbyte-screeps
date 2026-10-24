@@ -72,3 +72,6 @@ pub const MINERAL_REGEN_TIME: u32 = 50000;
 pub const MAP_SIZE_X: usize = 122;
 /// Number of rooms contained in one column of the map. May not exceed 255.
 pub const MAP_SIZE_Y: usize = 122;
+
+/// Size of each tile in pixels when the map zoom is unmodified.
+pub const TILE_SIZE: f32 = 50.;

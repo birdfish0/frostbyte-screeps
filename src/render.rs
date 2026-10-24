@@ -47,9 +47,10 @@ pub struct RenderState {
     /// The font used to draw the UI and other text. Defaults to `assets/CutiveMono-Regular.ttf`.
     pub font: Font,
     /// Horizontal offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
-    pub pan_offset_x: f32,
-    /// Horizontal offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
-    pub pan_offset_y: f32,
+    pub pan_offset: Vec2,
+    /// Scale of the map, as changed by scroll wheel. At 1.0, each room tile is [TILE_SIZE] pixels big.
+    /// Their size is multiplied by `view_scale` when being drawn.
+    pub view_scale: f32,
     /// When panning the world map, stores the mouse position when the dragging action began. Is [None] when not panning world map.
     pub mouse_drag_begin: Option<Vec2>,
     /// Set to `true` for the frame when a new game state update is received from the server thread. Used in [Self::draw_ui] to draw the update indicator.
@@ -73,8 +74,8 @@ impl RenderState {
             font: load_ttf_font("assets/CutiveMono-Regular.ttf")
                 .await
                 .unwrap(),
-            pan_offset_x: 0.,
-            pan_offset_y: 0.,
+            pan_offset: Vec2 { x: 0., y: 0. },
+            view_scale: 1.,
             mouse_drag_begin: None,
             latest_frame_duration: Duration::from_nanos(0),
             got_game_state: false,
