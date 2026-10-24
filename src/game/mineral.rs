@@ -49,6 +49,12 @@ impl MineralSource {
     where
         T: Rng,
     {
+        self.amount = match self.density {
+            MineralDensity::Low => MINERAL_DENSITY_LOW_VALUE,
+            MineralDensity::Medium => MINERAL_DENSITY_MEDIUM_VALUE,
+            MineralDensity::High => MINERAL_DENSITY_HIGH_VALUE,
+            MineralDensity::Ultra => MINERAL_DENSITY_ULTRA_VALUE,
+        };
         if self.density == MineralDensity::Low
             || self.density == MineralDensity::Ultra
             || rng.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
@@ -124,12 +130,6 @@ impl MineralSource {
                 }),
             }
         }
-        self.amount = match self.density {
-            MineralDensity::Low => MINERAL_DENSITY_LOW_VALUE,
-            MineralDensity::Medium => MINERAL_DENSITY_MEDIUM_VALUE,
-            MineralDensity::High => MINERAL_DENSITY_HIGH_VALUE,
-            MineralDensity::Ultra => MINERAL_DENSITY_ULTRA_VALUE,
-        };
         self.refresh_timer = tick + MINERAL_REGEN_TIME as u128;
     }
 }
