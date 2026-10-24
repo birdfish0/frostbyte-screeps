@@ -66,7 +66,7 @@ impl Room {
         );
         let ew = ew.unwrap();
         ensure!(
-            ew == 'E' && ew == 'W',
+            ew == 'E' || ew == 'W',
             "Failed to parse room name {}: expected E or W in position 0, got {}",
             name,
             ew

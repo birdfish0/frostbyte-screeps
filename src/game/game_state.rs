@@ -158,7 +158,7 @@ impl GameState {
             let posy = posy as usize;
 
             ensure!(
-                posy >= self.rooms.len(),
+                posy < self.rooms.len(),
                 "Y coordinate of room {} exceeded limits.",
                 room_name
             );
