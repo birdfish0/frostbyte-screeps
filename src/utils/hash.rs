@@ -1,4 +1,4 @@
-//! Provide a builder for the [SeaHasher] hasher for use in [HashMap::with_hasher].
+//! Provide a builder for the [SeaHasher] hasher for use in [std::collections::HashMap::with_hasher].
 
 use seahash::SeaHasher;
 use std::hash::BuildHasher;
