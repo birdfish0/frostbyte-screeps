@@ -87,6 +87,10 @@ impl RenderState {
         if self.got_game_state {
             draw_rectangle(0.0, 0.0, 5.0, 5.0, GREEN);
         }
+
+        if mouse_within(0.0, 0.0, screen_width(), top_bar_height) {
+            *mouse_eaten = true;
+        }
     }
 
     pub async fn render_loop(

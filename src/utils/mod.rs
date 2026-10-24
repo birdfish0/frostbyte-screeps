@@ -4,6 +4,7 @@ pub mod event_queue;
 pub mod hash;
 pub mod icon;
 pub mod recursive_avg;
+pub mod mouse;
 
 use anyhow::{Error, bail, ensure};
 use log::error;
