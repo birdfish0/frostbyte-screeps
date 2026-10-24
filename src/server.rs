@@ -15,12 +15,16 @@ pub fn run_loop(
     rx_state_override: Receiver<GameState>,
 ) {
     let mut game_state = GameState::new();
+    game_state.is_server = true;
     let mut event_queue = EventQueue::new();
     let mut stop = false;
     while !stop {
         while !rx_state_override.is_empty() {
             match rx_state_override.recv() {
-                Ok(msg) => game_state = msg,
+                Ok(msg) => {
+                    game_state = msg;
+                    game_state.is_server = true;
+                }
                 Err(err) => {
                     error!("Failed to read game state override: {}", err);
                 }

@@ -33,6 +33,7 @@ pub struct GameState {
     pub mineral_sources: HashMap<u64, MineralSource, SeaHashBuilder>,
     pub commodity_sources: HashMap<u64, CommoditySource, SeaHashBuilder>,
     pub random: SmallRng,
+    pub is_server: bool,
 }
 
 impl GameState {
@@ -77,6 +78,7 @@ impl GameState {
             mineral_sources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
             commodity_sources: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
             random: rng,
+            is_server: false,
         }
     }
 
@@ -116,7 +118,7 @@ impl GameState {
     ///
     /// - `data`: String containing the JSON object to be parsed.
     pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
-        info!("Loading map data from JSON");
+        info!("{} Loading map data from JSON", if self.is_server {"SERVER: "} else {""});
 
         let jsonroot = match serde_json::from_str::<serde_json::Value>(data) {
             Err(err) => {

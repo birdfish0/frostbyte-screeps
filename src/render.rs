@@ -64,6 +64,7 @@ impl RenderState {
                 match rx_state.recv() {
                     Ok(state) => {
                         self.game_state = state;
+                        self.game_state.is_server = false;
                         got_game_state = true;
                     }
                     Err(err) => {
