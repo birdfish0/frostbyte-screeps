@@ -40,15 +40,9 @@ pub fn run_loop(
                     }
                     RenderToServerThreadMsg::LoadMapFile(filepath) => {
                         let file = fs::File::open(&filepath);
-                        if file.is_err() {
-                            error!(
-                                "Failed to read map file {}: {}",
-                                filepath,
-                                file.err().unwrap()
-                            );
-                        } else {
+                        if let Ok(mut file) = file {
                             let mut data = String::new();
-                            match file.unwrap().read_to_string(&mut data) {
+                            match file.read_to_string(&mut data) {
                                 Err(err) => {
                                     error!("Failed to read map file {}: {}", filepath, err)
                                 }
@@ -56,6 +50,12 @@ pub fn run_loop(
                                     game_state.load_rooms_from_json(&data);
                                 }
                             }
+                        } else {
+                            error!(
+                                "Failed to read map file {}: {}",
+                                filepath,
+                                file.err().unwrap()
+                            );
                         }
                     }
                     RenderToServerThreadMsg::RequestFullState => {

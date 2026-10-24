@@ -41,7 +41,7 @@ impl Room {
     /// ## Arguments
     ///
     /// - `name`: The room name, formatted as "<E/W><X><N/S><Y>". For example, "E34N12", or "W4S0".
-    /// Note that E0S0, E0N0, W0S0, and W0N0 are not the same room, they are adjascent rooms in the center of the map.
+    ///   Note that E0S0, E0N0, W0S0, and W0N0 are not the same room, they are adjascent rooms in the center of the map.
     pub fn pos_from_name(name: &str) -> Result<(u8, u8), Error> {
         let mut chars = name.chars();
         let mut ret0: u8 = 0;
@@ -123,7 +123,7 @@ impl Room {
 
         let mut remainder_str: String = chars.collect();
 
-        let remainder = u8::from_str_radix(&remainder_str, 10);
+        let remainder = str::parse::<u8>(&remainder_str);
         ensure!(
             remainder.is_ok(),
             "Failed to parse room name {}: remainder ({}) is not number: {}",
@@ -145,7 +145,7 @@ impl Room {
             _ => 0,
         };
 
-        return Ok((ret0, ret1));
+        Ok((ret0, ret1))
     }
 
     /// Fill in the terrain data for this room based on a terrain string, imported from a JSON file.

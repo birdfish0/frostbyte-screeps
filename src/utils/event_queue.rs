@@ -25,7 +25,7 @@ impl Debug for QueuedEvent {
             f,
             "QueuedEvent {{ tick: {}, callback: {:?} }}",
             self.tick,
-            self.callback.type_id()
+            (*self.callback).type_id()
         )
     }
 }

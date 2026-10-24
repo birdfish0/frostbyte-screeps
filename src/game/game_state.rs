@@ -51,7 +51,9 @@ pub enum RenderToServerThreadMsg {
 impl GameState {
     /// Creates a [GameState] with default parameters.
     pub fn new() -> Self {
-        let mut rooms: Vec<Vec<Room>> = vec![Vec::with_capacity(MAP_SIZE_X); MAP_SIZE_Y];
+        let mut rooms: Vec<Vec<Room>> = (0..MAP_SIZE_Y)
+            .map(|_| Vec::with_capacity(MAP_SIZE_X))
+            .collect::<Vec<_>>();
         for x in 0..MAP_SIZE_X {
             for y in 0..MAP_SIZE_Y {
                 rooms.get_mut(y).unwrap().push(Room {
@@ -77,7 +79,7 @@ impl GameState {
             tick_durations: RecursiveAvg::new(vec![256, 32, 32], true),
             last_tick_time: Instant::now(),
             intents: VecDeque::new(),
-            rooms: rooms,
+            rooms,
             creeps: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
             structures: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
             construction_sites: HashMap::with_hasher(SeaHashBuilder::new(&mut rng)),
@@ -129,38 +131,34 @@ impl GameState {
     pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
         info!("Loading map data from JSON");
 
-        let jsonroot;
-        match serde_json::from_str::<serde_json::Value>(&data) {
+        let jsonroot = match serde_json::from_str::<serde_json::Value>(data) {
             Err(err) => {
                 bail!("Malformed JSON: {}", err);
             }
-            Ok(v) => jsonroot = v,
-        }
-        let rooms;
-        match jsonroot["rooms"].as_array() {
+            Ok(v) => v,
+        };
+        let rooms = match jsonroot["rooms"].as_array() {
             None => {
                 bail!("Malformed room data, expected 'rooms' key at root level.");
             }
-            Some(v) => rooms = v,
-        }
+            Some(v) => v,
+        };
         for room in rooms {
-            let room_name;
-            match room["room"].as_str() {
+            let room_name = match room["room"].as_str() {
                 None => {
                     bail!(
                         "Malformed room data, expected 'room' key within room data to contain string."
                     );
                 }
-                Some(v) => room_name = v,
-            }
-            let terrain;
-            match room["terrain"].as_str() {
+                Some(v) => v,
+            };
+            let terrain = match room["terrain"].as_str() {
                 None => {
                     bail!(
                         "Malformed terrain data, expected 'terrain' key within room data to contain string."
                     );
                 }
-                Some(v) => terrain = v,
+                Some(v) => v,
             };
 
             let res = Room::pos_from_name(room_name);

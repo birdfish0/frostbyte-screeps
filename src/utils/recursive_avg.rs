@@ -179,17 +179,13 @@ impl RecursiveAvg {
     /// Returns 0 if no data points have been added.
     pub fn get(&self) -> u128 {
         if self.sum_mode {
-            if self.current_window_size == 0 {
-                0
-            } else {
-                self.sums[self.lowest_filled_list] / self.current_window_size
-            }
+            self.sums[self.lowest_filled_list]
+                .checked_div(self.current_window_size)
+                .unwrap_or(0)
         } else {
-            if self.lowest_filled_list_amount == 0 {
-                0
-            } else {
-                self.sums[self.lowest_filled_list] / self.lowest_filled_list_amount as u128
-            }
+            self.sums[self.lowest_filled_list]
+                .checked_div(self.lowest_filled_list_amount as u128)
+                .unwrap_or(0)
         }
     }
 }
