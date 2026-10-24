@@ -35,19 +35,6 @@ pub struct GameState {
     pub random: SmallRng,
 }
 
-#[derive(PartialEq, Eq, Clone, Debug)]
-/// A small message sent from the render thread to the server thread.
-/// Used to update properties pertaining to the process that calls [GameState::tick] or request a full game state update.
-///
-/// Note that full game state overrides are sent through their own channel, to keep these messages small in size.
-pub enum RenderToServerThreadMsg {
-    Quit,
-    Pause(bool),
-    ForceTickDelay(u32),
-    LoadMapFile(String),
-    RequestFullState,
-}
-
 impl GameState {
     /// Creates a [GameState] with default parameters.
     pub fn new() -> Self {

@@ -3,7 +3,7 @@ use std::{fs, io::Read, thread, time::Duration};
 use crossbeam_channel::{Receiver, Sender};
 use log::{error, info};
 
-use crate::{game::game_state::*, utils::event_queue::EventQueue};
+use crate::{game::game_state::*, render::RenderToServerThreadMsg, utils::event_queue::EventQueue};
 
 /// Run the server logic in a loop until [RenderToServerThreadMsg::Quit] is received.
 ///
