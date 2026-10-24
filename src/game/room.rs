@@ -2,6 +2,8 @@
 
 use anyhow::{Error, bail, ensure};
 
+use crate::game::RoomPos;
+
 /// Contains data pertaining to a room on the map.
 ///
 /// Does not contain the actual data of most of the objects within the room, only their ID.
@@ -15,7 +17,7 @@ pub struct Room {
     pub creeps: Vec<u64>,
     /// Terrain of the room, by rows. Each tile is represented by 2 bits,
     /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp.
-    /// 
+    ///
     /// This means that the first 100 bits will represent the first row of the terrain (top row),
     /// and bits 101-200 represent the second row, etc.
     pub terrain: [u8; 625],
@@ -47,7 +49,82 @@ impl Default for Room {
     }
 }
 
+/// A tile in the terrain of a room.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
+pub enum TerrainTile {
+    Plains,
+    Wall,
+    Swamp,
+    #[default]
+    /// Default value, should not appear normally in a room.
+    Void,
+}
+
+impl From<u8> for TerrainTile {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Self::Plains,
+            1 => Self::Wall,
+            2 => Self::Swamp,
+            _ => Self::Void,
+        }
+    }
+}
+
 impl Room {
+    /// Get the 9 terrain tiles around the given coordinates in the room.
+    ///
+    /// If a tile is out of range, [TerrainTile::Void] is returned in its place.
+    pub fn get_look_terrain_area_at(&self, x: u8, y: u8) -> [[TerrainTile; 3]; 3] {
+        [
+            [
+                self.get_terrain_at(x - 1, y - 1).unwrap_or_default(),
+                self.get_terrain_at(x, y - 1).unwrap_or_default(),
+                self.get_terrain_at(x + 1, y - 1).unwrap_or_default(),
+            ],
+            [
+                self.get_terrain_at(x - 1, y).unwrap_or_default(),
+                self.get_terrain_at(x, y).unwrap_or_default(),
+                self.get_terrain_at(x + 1, y).unwrap_or_default(),
+            ],
+            [
+                self.get_terrain_at(x - 1, y + 1).unwrap_or_default(),
+                self.get_terrain_at(x, y + 1).unwrap_or_default(),
+                self.get_terrain_at(x + 1, y + 1).unwrap_or_default(),
+            ],
+        ]
+    }
+
+    /// Get the 9 terrain tiles around the given [RoomPos] in the room.
+    /// Note the result will be inaccurate if the given RoomPos is not in this room.
+    pub fn get_terrain_area_at_rp(&self, pos: RoomPos) -> [[TerrainTile; 3]; 3] {
+        self.get_look_terrain_area_at(pos.pos_x, pos.pos_y)
+    }
+
+    /// Get the terrain tile at the given coordinates in the room.
+    ///
+    /// ## Errors
+    ///
+    /// Returns error if the provided coordinate is out of range (if either coordinate is >= 50).
+    pub fn get_terrain_at(&self, x: u8, y: u8) -> Result<TerrainTile, Error> {
+        ensure!(x < 50, "X coordinate of terrain tile out of range: {}", x);
+        ensure!(y < 50, "Y coordinate of terrain tile out of range: {}", y);
+        let byte_offset = (x + y * 50 / 4) as usize;
+        let bit_offset = x + y * 50 % 4;
+        let data = self.terrain[byte_offset] << bit_offset & 0b11000000;
+        Ok(TerrainTile::from(data))
+    }
+
+    /// Get the terrain tile at the given [RoomPos] in this room.
+    /// Note the result will be inaccurate if the given RoomPos is not in this room.
+    ///
+    /// ## Errors
+    ///
+    /// See [Self::get_terrain_at].
+    pub fn get_terrain_at_rp(&self, pos: RoomPos) -> Result<TerrainTile, Error> {
+        self.get_terrain_at(pos.pos_x, pos.pos_y)
+    }
+
     /// Get the coordinates of the room with respect to the top-left corner,
     /// in (x, y) format where (0,0) is the top-leftmost room, from a room name.
     ///
