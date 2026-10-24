@@ -17,10 +17,15 @@ use crate::{game::game_state::GameState, utils::recursive_avg::RecursiveAvg};
 ///
 /// Note that full game state overrides are sent through their own channel, to keep these messages small in size.
 pub enum RenderToServerThreadMsg {
+    /// Stop the server loop at the end of the next tick.
     Quit,
+    /// Change [GameState::paused] of the server side game state object.
     Pause(bool),
+    /// Change [GameState::force_tick_delay] of the server side game state object.
     ForceTickDelay(u32),
+    /// Call [GameState::load_rooms_from_json] on the server side game state object with the provided string as argument.
     LoadMapFile(String),
+    /// Request that the server send its current [GameState] down the `tx_state` channel passed into [`server::run_loop`][crate::server::run_loop].
     RequestFullState,
 }
 
