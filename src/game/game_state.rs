@@ -108,7 +108,7 @@ impl GameState {
         match intent {
             Intent::Nothing => (),
             Intent::Move(creepid, dir) => {
-                todo!();
+                todo!("{} {:?}", creepid, dir);
             }
         }
     }
@@ -178,7 +178,7 @@ impl GameState {
                 room_name
             );
 
-            self.rooms[posy][posx].terrain_from_string(terrain);
+            self.rooms[posy][posx].terrain_from_string(terrain)?;
         }
         Ok(())
     }

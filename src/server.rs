@@ -51,7 +51,9 @@ pub fn run_loop(
                                     error!("SERVER: Failed to read map file {}: {}", filepath, err)
                                 }
                                 Ok(_) => {
-                                    game_state.load_rooms_from_json(&data);
+                                    game_state.load_rooms_from_json(&data).unwrap_or_else(|err| {
+                                        error!("SERVER: Failed to load game data from JSON: {}", err);
+                                    });
                                 }
                             }
                         } else {
@@ -63,7 +65,9 @@ pub fn run_loop(
                         }
                     }
                     RenderToServerThreadMsg::RequestFullState => {
-                        tx.send(game_state.clone());
+                        tx.send(game_state.clone()).unwrap_or_else(|err| {
+                            error!("SERVER: Failed to send game state to render thread: {}", err);
+                        });
                     }
                 },
                 Err(err) => {

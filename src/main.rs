@@ -1,8 +1,9 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
+#![allow(dead_code, reason="will use it later")]
 
 use crossbeam_channel::{bounded, unbounded};
-use log::{debug, info};
+use log::{debug, error, info};
 use log4rs::config::Deserializers;
 use macroquad::prelude::*;
 use std::thread;
@@ -37,7 +38,7 @@ fn window_conf() -> Conf {
 async fn main() {
     let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new())
         .expect("Invalid logger configuration");
-    log4rs::init_config(config);
+    log4rs::init_config(config).expect("Could not initialize logger");
 
     macroquad::input::prevent_quit();
 
@@ -58,7 +59,7 @@ async fn main() {
 
     debug!("Requesting map data load");
 
-    tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()));
+    tx.send(LoadMapFile("assets/mmo-shard3.json".to_string())).expect("Failed to send LoadMapFile to server thread");
 
     debug!("Setup render-thread");
 
@@ -70,7 +71,9 @@ async fn main() {
         .render_loop(tx, rx_state, tx_state_override)
         .await;
 
-    server_thread.join();
+    if let Err(err) = server_thread.join() {
+        error!("Server thread panicked: {:?}", err);
+    }
 
     info!("Stop complete");
 }

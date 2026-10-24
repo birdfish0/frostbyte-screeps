@@ -44,8 +44,8 @@ impl Room {
     ///   Note that E0S0, E0N0, W0S0, and W0N0 are not the same room, they are adjascent rooms in the center of the map.
     pub fn pos_from_name(name: &str) -> Result<(u8, u8), Error> {
         let mut chars = name.chars();
-        let mut ret0: u8 = 0;
-        let mut ns;
+        let ret0: u8;
+        let ns;
 
         // -------------------------------- East / West
         let ew = chars.next();
@@ -121,7 +121,7 @@ impl Room {
 
         // -------------------------------- Final digits
 
-        let mut remainder_str: String = chars.collect();
+        let remainder_str: String = chars.collect();
 
         let remainder = str::parse::<u8>(&remainder_str);
         ensure!(
@@ -155,7 +155,7 @@ impl Room {
         let mut chars = terrain.chars();
         for y in 0..50 {
             let mut row = 0u128;
-            for x in 0..50 {
+            for _x in 0..50 {
                 let t = chars.next();
                 ensure!(t.is_some(), "Expected more terrain data, got EOF");
                 let t = t.unwrap();
