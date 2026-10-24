@@ -14,8 +14,11 @@ pub struct Room {
     /// IDs of creeps in the room.
     pub creeps: Vec<u64>,
     /// Terrain of the room, by rows. Each tile is represented by 2 bits,
-    /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp. The last 28 bits of each row is unused.
-    pub terrain: [u128; 50],
+    /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp.
+    /// 
+    /// This means that the first 100 bits will represent the first row of the terrain (top row),
+    /// and bits 101-200 represent the second row, etc.
+    pub terrain: [u8; 625],
     /// IDs of structures in the room.
     pub structures: Vec<u64>,
     /// IDs of energy sources in the room.
@@ -34,7 +37,7 @@ impl Default for Room {
             posx: 0,
             posy: 0,
             creeps: Vec::new(),
-            terrain: [0; 50],
+            terrain: [0; 625],
             structures: Vec::new(),
             energy_sources: Vec::new(),
             mineral_source: None,
@@ -163,9 +166,13 @@ impl Room {
     /// See [crate::GameState::load_rooms_from_json] for more information on the format of the string.
     pub fn terrain_from_string(&mut self, terrain: &str) -> Result<(), Error> {
         let mut chars = terrain.chars();
-        for y in 0..50 {
-            let mut row = 0u128;
+        let mut dat = 0u8;
+        let mut idx = 0;
+        let mut shifts = 0;
+        for _y in 0..50 {
             for _x in 0..50 {
+                dat <<= 2;
+                shifts += 1;
                 let t = chars.next();
                 ensure!(t.is_some(), "Expected more terrain data, got EOF");
                 let t = t.unwrap();
@@ -174,11 +181,13 @@ impl Room {
                     "Expected 0, 1, or 2, got {}.",
                     t
                 );
-                row |= t.to_digit(10).unwrap() as u128; // Safe unwrap
-                row <<= 2;
+                dat |= t.to_digit(10).unwrap() as u8; // Safe unwrap
+                if shifts >= 4 {
+                    self.terrain[idx] = dat;
+                    shifts = 0;
+                    idx += 1;
+                }
             }
-            row >>= 2;
-            self.terrain[y] = row;
         }
         Ok(())
     }
