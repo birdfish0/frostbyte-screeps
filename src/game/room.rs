@@ -7,15 +7,25 @@ use anyhow::{Error, bail, ensure};
 /// Does not contain the actual data of most of the objects within the room, only their ID.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Room {
+    /// X position of the room in the map, with 0 being the leftmost column.
     pub posx: u8,
+    /// Y position of the room in the map, with 0 being the top row.
     pub posy: u8,
-    pub creeps: Vec<u64>,              // IDs
-    pub terrain: [u128; 50], // (rows) bitfield of terrain, 2 bits per tile, 0=plain, 1=wall, 2=swamp
-    pub structures: Vec<u64>, // IDs
-    pub energy_sources: Vec<u64>, // IDs
-    pub mineral_source: Option<u64>, // IDs
-    pub commodity_source: Option<u64>, // IDs
-    pub construction_sites: Vec<u64>, // IDs
+    /// IDs of creeps in the room.
+    pub creeps: Vec<u64>,
+    /// Terrain of the room, by rows. Each tile is represented by 2 bits,
+    /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp. The last 28 bits of each row is unused.
+    pub terrain: [u128; 50],
+    /// IDs of structures in the room.
+    pub structures: Vec<u64>,
+    /// IDs of energy sources in the room.
+    pub energy_sources: Vec<u64>,
+    /// ID of the mineral source in the room, if there is one.
+    pub mineral_source: Option<u64>,
+    /// ID of the commodity source in the room, if there is one.
+    pub commodity_source: Option<u64>,
+    /// IDs of construction sites in the room.
+    pub construction_sites: Vec<u64>,
 }
 
 impl Default for Room {
