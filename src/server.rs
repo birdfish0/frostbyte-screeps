@@ -26,7 +26,7 @@ pub fn run_loop(
                     game_state.is_server = true;
                 }
                 Err(err) => {
-                    error!("Failed to read game state override: {}", err);
+                    error!("SERVER: Failed to read game state override: {}", err);
                 }
             }
         }
@@ -48,7 +48,7 @@ pub fn run_loop(
                             let mut data = String::new();
                             match file.read_to_string(&mut data) {
                                 Err(err) => {
-                                    error!("Failed to read map file {}: {}", filepath, err)
+                                    error!("SERVER: Failed to read map file {}: {}", filepath, err)
                                 }
                                 Ok(_) => {
                                     game_state.load_rooms_from_json(&data);
@@ -56,7 +56,7 @@ pub fn run_loop(
                             }
                         } else {
                             error!(
-                                "Failed to read map file {}: {}",
+                                "SERVER: Failed to read map file {}: {}",
                                 filepath,
                                 file.err().unwrap()
                             );
@@ -67,7 +67,7 @@ pub fn run_loop(
                     }
                 },
                 Err(err) => {
-                    error!("Failed to read message from render thread: {}", err);
+                    error!("SERVER: Failed to read message from render thread: {}", err);
                 }
             }
         }
