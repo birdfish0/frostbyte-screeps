@@ -2,8 +2,8 @@ use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
 use log::info;
-use macroquad::{input, prelude::*};
 use macroquad::text::{Font, load_ttf_font};
+use macroquad::{input, prelude::*};
 
 use crate::consts::*;
 use crate::utils::mouse::mouse_within;
@@ -59,8 +59,7 @@ impl RenderState {
         }
     }
 
-    pub fn draw_room_terrain(&self, posx: u8, posy: u8) {
-    }
+    pub fn draw_room_terrain(&self, posx: u8, posy: u8) {}
 
     pub fn draw_ui(&self, mouse_eaten: &mut bool) {
         let top_bar_height = 30.0;
@@ -101,7 +100,8 @@ impl RenderState {
     ) {
         loop {
             self.latest_frame_duration = self.last_frame_end.elapsed();
-            self.frame_durations.add(self.latest_frame_duration.as_nanos());
+            self.frame_durations
+                .add(self.latest_frame_duration.as_nanos());
 
             if self.last_game_state_update.elapsed().as_secs_f32() > self.game_state_update_interval
             {
@@ -142,7 +142,7 @@ impl RenderState {
                 90.0,
                 YELLOW,
             );
-            
+
             self.draw_ui(&mut mouse_eaten);
 
             self.last_frame_end = Instant::now();
