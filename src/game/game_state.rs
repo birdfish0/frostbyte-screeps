@@ -2,13 +2,13 @@
 
 use std::{collections::VecDeque, time::Instant};
 
-use anyhow::{Error, anyhow, bail, ensure};
-use log::{debug, error, info};
+use anyhow::{Error, bail, ensure};
+use log::{debug, error};
 use rand::SeedableRng;
 
 use crate::{
     game::{room::*, *},
-    utils::{event_queue, hash::SeaHashBuilder, recursive_avg::RecursiveAvg},
+    utils::{hash::SeaHashBuilder, recursive_avg::RecursiveAvg},
 };
 
 #[derive(Debug, Clone)]

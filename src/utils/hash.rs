@@ -1,7 +1,6 @@
 //! Provide a builder for the [SeaHasher] hasher for use in [HashMap::with_hasher].
 
 use seahash::SeaHasher;
-use std::collections::HashMap;
 use std::hash::BuildHasher;
 
 use rand::Rng;

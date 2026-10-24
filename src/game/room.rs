@@ -1,6 +1,6 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
-use anyhow::{Error, anyhow, bail, ensure};
+use anyhow::{Error, bail, ensure};
 
 /// Contains data pertaining to a room on the map.
 ///

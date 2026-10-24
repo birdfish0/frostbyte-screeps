@@ -3,7 +3,7 @@ use rand::Rng;
 use utils::random::random_choice;
 
 use crate::{
-    event_queue::{self, EventCallback, QueuedEvent},
+    event_queue::{EventCallback, QueuedEvent},
     game::*,
 };
 

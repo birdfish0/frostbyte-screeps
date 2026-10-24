@@ -1,7 +1,6 @@
 //! Provides functions related to random number generation.
 
 use anyhow::{Error, bail, ensure};
-use log::error;
 use rand::{Rng, RngExt};
 
 /// Choose a random value from `vals` and return it.

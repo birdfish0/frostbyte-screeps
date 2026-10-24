@@ -1,7 +1,6 @@
 //! Contains the [RecursiveAvg] struct and its implementation.
 
 use anyhow::ensure;
-use log::{error, info};
 
 /// Uses multiple lists to keep track of the rolling average over a very large window size without storing the entire dataset.
 ///

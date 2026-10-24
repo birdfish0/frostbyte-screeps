@@ -1,23 +1,16 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
-#![allow(unused)]
 
-use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
-use log::{debug, error, info};
+use crossbeam_channel::{bounded, unbounded};
+use log::{debug, info};
 use log4rs::config::Deserializers;
 use macroquad::prelude::*;
-use std::fs;
-use std::io::Read;
-use std::thread::{self, panicking};
-use std::time::{Duration, Instant};
+use std::thread;
 
-use crate::consts::*;
-use crate::game::Creep;
 use crate::game::game_state::GameState;
 use crate::render::RenderState;
 use crate::render::{RenderToServerThreadMsg::LoadMapFile, *};
-use crate::utils::event_queue::{self, EventQueue};
-use crate::utils::recursive_avg::RecursiveAvg;
+use crate::utils::event_queue::self;
 
 mod consts;
 mod game;
