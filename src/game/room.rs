@@ -2,7 +2,7 @@
 
 use anyhow::{Error, bail, ensure};
 
-use crate::game::RoomPos;
+use super::*;
 
 /// Contains data pertaining to a room on the map.
 ///
@@ -13,7 +13,7 @@ pub struct Room {
     pub posx: u8,
     /// Y position of the room in the map, with 0 being the top row.
     pub posy: u8,
-    /// IDs of creeps in the room.
+    /// IDs of [Creep]s in the room.
     pub creeps: Vec<u64>,
     /// Terrain of the room, by rows. Each tile is represented by 2 bits,
     /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp.
@@ -21,21 +21,21 @@ pub struct Room {
     /// This means that the first 100 bits will represent the first row of the terrain (top row),
     /// and bits 101-200 represent the second row, etc.
     pub terrain: [u8; 625],
-    /// IDs of structures in the room.
+    /// IDs of [Structure]s in the room.
     pub structures: Vec<u64>,
-    /// IDs of energy sources in the room.
+    /// IDs of [EnergySource]s in the room.
     pub energy_sources: Vec<u64>,
-    /// ID of the mineral source in the room, if there is one.
+    /// ID of the [MineralSource] in the room, if there is one.
     pub mineral_source: Option<u64>,
-    /// ID of the commodity source in the room, if there is one.
+    /// ID of the [CommoditySource] in the room, if there is one.
     pub commodity_source: Option<u64>,
-    /// IDs of construction sites in the room.
+    /// IDs of [ConstructionSite]s in the room.
     pub construction_sites: Vec<u64>,
-    /// IDs of ruins in the room.
+    /// IDs of [Ruin]s in the room.
     pub ruins: Vec<u64>,
-    /// IDs of tombstones in the room.
+    /// IDs of [Tombstone]s in the room.
     pub tombstones: Vec<u64>,
-    /// IDs of dropped resources in the room.
+    /// IDs of [DroppedResource]s in the room.
     pub dropped_resources: Vec<u64>,
 }
 
