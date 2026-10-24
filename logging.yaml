@@ -8,7 +8,11 @@ appenders:
     kind: file
     path: latest.log
     append: false
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} {M} [{T}/{l}] {m}\n"
   console_appender:
     kind: console
     target: stdout
     tty_only: false
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S)} {M} [{T}/{l}] {m}\n"

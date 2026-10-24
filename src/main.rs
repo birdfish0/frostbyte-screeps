@@ -54,15 +54,20 @@ async fn main() {
 
     debug!("Setup server thread");
 
-    let server_thread =
-        thread::spawn(move || server::run_loop(rx_srv, tx_state, rx_state_override));
+    let server_thread = thread::Builder::new()
+        .name("server".to_owned())
+        .spawn(move || server::run_loop(rx_srv, tx_state, rx_state_override))
+        .expect({
+            error!("Failed to spawn server thread. Stopping.");
+            "Failed to spawn server thread"
+        });
 
     debug!("Requesting map data load");
 
     tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()))
         .expect("Failed to send LoadMapFile to server thread");
 
-    debug!("Setup render-thread");
+    debug!("Setup render thread");
 
     let mut render_state = RenderState::new().await;
 

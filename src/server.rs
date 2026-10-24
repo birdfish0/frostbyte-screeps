@@ -26,60 +26,54 @@ pub fn run_loop(
                     game_state.is_server = true;
                 }
                 Err(err) => {
-                    error!("SERVER: Failed to read game state override: {}", err);
+                    error!("Failed to read game state override: {}", err);
                 }
             }
         }
         while !rx.is_empty() {
             match rx.recv() {
-                Ok(msg) => {
-                    match msg {
-                        RenderToServerThreadMsg::Quit => {
-                            stop = true;
-                        }
-                        RenderToServerThreadMsg::Pause(paused) => {
-                            game_state.paused = paused;
-                        }
-                        RenderToServerThreadMsg::ForceTickDelay(delay) => {
-                            game_state.force_tick_delay = delay;
-                        }
-                        RenderToServerThreadMsg::LoadMapFile(filepath) => {
-                            let file = fs::File::open(&filepath);
-                            if let Ok(mut file) = file {
-                                let mut data = String::new();
-                                match file.read_to_string(&mut data) {
-                                    Err(err) => {
-                                        error!(
-                                            "SERVER: Failed to read map file {}: {}",
-                                            filepath, err
-                                        )
-                                    }
-                                    Ok(_) => {
-                                        game_state.load_rooms_from_json(&data).unwrap_or_else(|err| {
-                                        error!("SERVER: Failed to load game data from JSON: {}", err);
-                                    });
-                                    }
+                Ok(msg) => match msg {
+                    RenderToServerThreadMsg::Quit => {
+                        stop = true;
+                    }
+                    RenderToServerThreadMsg::Pause(paused) => {
+                        game_state.paused = paused;
+                    }
+                    RenderToServerThreadMsg::ForceTickDelay(delay) => {
+                        game_state.force_tick_delay = delay;
+                    }
+                    RenderToServerThreadMsg::LoadMapFile(filepath) => {
+                        let file = fs::File::open(&filepath);
+                        if let Ok(mut file) = file {
+                            let mut data = String::new();
+                            match file.read_to_string(&mut data) {
+                                Err(err) => {
+                                    error!("Failed to read map file {}: {}", filepath, err)
                                 }
-                            } else {
-                                error!(
-                                    "SERVER: Failed to read map file {}: {}",
-                                    filepath,
-                                    file.err().unwrap()
-                                );
+                                Ok(_) => {
+                                    game_state
+                                        .load_rooms_from_json(&data)
+                                        .unwrap_or_else(|err| {
+                                            error!("Failed to load game data from JSON: {}", err);
+                                        });
+                                }
                             }
-                        }
-                        RenderToServerThreadMsg::RequestFullState => {
-                            tx.send(game_state.clone()).unwrap_or_else(|err| {
-                                error!(
-                                    "SERVER: Failed to send game state to render thread: {}",
-                                    err
-                                );
-                            });
+                        } else {
+                            error!(
+                                "Failed to read map file {}: {}",
+                                filepath,
+                                file.err().unwrap()
+                            );
                         }
                     }
-                }
+                    RenderToServerThreadMsg::RequestFullState => {
+                        tx.send(game_state.clone()).unwrap_or_else(|err| {
+                            error!("Failed to send game state to render thread: {}", err);
+                        });
+                    }
+                },
                 Err(err) => {
-                    error!("SERVER: Failed to read message from render thread: {}", err);
+                    error!("Failed to read message from render thread: {}", err);
                 }
             }
         }
@@ -88,5 +82,5 @@ pub fn run_loop(
             thread::sleep(Duration::from_nanos(game_state.force_tick_delay as u64));
         }
     }
-    info!("SERVER: Server thread stopping");
+    info!("Server thread stopping");
 }
