@@ -1,11 +1,12 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
 use log::info;
-use macroquad::prelude::*;
+use macroquad::{input, prelude::*};
 use macroquad::text::{Font, load_ttf_font};
 
 use crate::consts::*;
+use crate::utils::mouse::mouse_within;
 use crate::{game::game_state::GameState, utils::recursive_avg::RecursiveAvg};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -29,6 +30,11 @@ pub struct RenderState {
     pub last_frame_end: Instant,
     pub frame_durations: RecursiveAvg,
     pub font: Font,
+    pub pan_offset_x: f32,
+    pub pan_offset_y: f32,
+    pub mouse_drag_begin: Option<Vec2>,
+    pub got_game_state: bool,
+    pub latest_frame_duration: Duration,
 }
 
 impl RenderState {
@@ -45,6 +51,41 @@ impl RenderState {
             font: load_ttf_font("assets/CutiveMono-Regular.ttf")
                 .await
                 .unwrap(),
+            pan_offset_x: 0.,
+            pan_offset_y: 0.,
+            mouse_drag_begin: None,
+            latest_frame_duration: Duration::from_nanos(0),
+            got_game_state: false,
+        }
+    }
+
+    pub fn draw_room_terrain(&self, posx: u8, posy: u8) {
+    }
+
+    pub fn draw_ui(&self, mouse_eaten: &mut bool) {
+        let top_bar_height = 30.0;
+        draw_rectangle(0.0, 0.0, screen_width(), top_bar_height, UI_HIGH_BG_COLOR);
+        draw_text_ex(
+            format!(
+                "tick {:0>12} | {:0>12}ns/t ({:0>8}tps) | {:0>3}fps (avg. {:0>3})",
+                self.game_state.tick,
+                self.game_state.tick_durations.get(),
+                1000000000 / self.game_state.tick_durations.get().max(1),
+                1000000000 / self.latest_frame_duration.as_nanos().max(1),
+                1000000000 / self.frame_durations.get().max(1)
+            ),
+            20.0,
+            20.0,
+            TextParams {
+                font_size: 40,
+                color: WHITE,
+                font_scale: 0.5,
+                font: Some(&self.font),
+                ..Default::default()
+            },
+        );
+        if self.got_game_state {
+            draw_rectangle(0.0, 0.0, 5.0, 5.0, GREEN);
         }
     }
 
@@ -55,8 +96,8 @@ impl RenderState {
         tx_state_override: Sender<GameState>,
     ) {
         loop {
-            let frame_duration = self.last_frame_end.elapsed();
-            self.frame_durations.add(frame_duration.as_nanos());
+            self.latest_frame_duration = self.last_frame_end.elapsed();
+            self.frame_durations.add(self.latest_frame_duration.as_nanos());
 
             if self.last_game_state_update.elapsed().as_secs_f32() > self.game_state_update_interval
             {
@@ -64,22 +105,24 @@ impl RenderState {
                 tx.send(RenderToServerThreadMsg::RequestFullState);
             }
 
-            let got_game_state;
             if !rx_state.is_empty() {
                 match rx_state.recv() {
                     Ok(state) => {
                         self.game_state = state;
                         self.game_state.is_server = false;
-                        got_game_state = true;
+                        self.got_game_state = true;
                     }
                     Err(err) => {
-                        got_game_state = false;
+                        self.got_game_state = false;
                         error!("Error receiving game state from server thread: {}", err);
                     }
                 }
             } else {
-                got_game_state = false;
+                self.got_game_state = false;
             }
+
+            let mouse_pos = input::mouse_position();
+            let mut mouse_eaten = false;
 
             clear_background(WORLD_BG_COLOR);
 
@@ -95,29 +138,8 @@ impl RenderState {
                 90.0,
                 YELLOW,
             );
-            draw_rectangle(0.0, 0.0, screen_width(), 30.0, UI_HIGH_BG_COLOR);
-            draw_text_ex(
-                format!(
-                    "tick {:0>12} | {:0>12}ns/t ({:0>8}tps) | {:0>3}fps (avg. {:0>3})",
-                    self.game_state.tick,
-                    self.game_state.tick_durations.get(),
-                    1000000000 / self.game_state.tick_durations.get().max(1),
-                    1000000000 / frame_duration.as_nanos().max(1),
-                    1000000000 / self.frame_durations.get().max(1)
-                ),
-                20.0,
-                20.0,
-                TextParams {
-                    font_size: 40,
-                    color: WHITE,
-                    font_scale: 0.5,
-                    font: Some(&self.font),
-                    ..Default::default()
-                },
-            );
-            if got_game_state {
-                draw_rectangle(0.0, 0.0, 5.0, 5.0, GREEN);
-            }
+            
+            self.draw_ui(&mut mouse_eaten);
 
             self.last_frame_end = Instant::now();
 
