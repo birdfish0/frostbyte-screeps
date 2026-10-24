@@ -1,20 +1,23 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
+use std::collections::HashSet;
+
 use anyhow::{Error, bail, ensure};
+use seahash::SeaHasher;
 
 use super::*;
 
 /// Contains data pertaining to a room on the map.
 ///
 /// Does not contain the actual data of most of the objects within the room, only their ID.
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Room {
     /// X position of the room in the map, with 0 being the leftmost column.
     pub posx: u8,
     /// Y position of the room in the map, with 0 being the top row.
     pub posy: u8,
     /// IDs of [Creep]s in the room.
-    pub creeps: Vec<u64>,
+    pub creeps: HashSet<u64, SeaHasher>,
     /// Terrain of the room, by rows. Each tile is represented by 2 bits,
     /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp.
     ///
@@ -22,21 +25,21 @@ pub struct Room {
     /// and bits 101-200 represent the second row, etc.
     pub terrain: [u8; 625],
     /// IDs of [Structure]s in the room.
-    pub structures: Vec<u64>,
+    pub structures: HashSet<u64, SeaHasher>,
     /// IDs of [EnergySource]s in the room.
-    pub energy_sources: Vec<u64>,
+    pub energy_sources: HashSet<u64, SeaHasher>,
     /// ID of the [MineralSource] in the room, if there is one.
     pub mineral_source: Option<u64>,
     /// ID of the [CommoditySource] in the room, if there is one.
     pub commodity_source: Option<u64>,
     /// IDs of [ConstructionSite]s in the room.
-    pub construction_sites: Vec<u64>,
+    pub construction_sites: HashSet<u64, SeaHasher>,
     /// IDs of [Ruin]s in the room.
-    pub ruins: Vec<u64>,
+    pub ruins: HashSet<u64, SeaHasher>,
     /// IDs of [Tombstone]s in the room.
-    pub tombstones: Vec<u64>,
+    pub tombstones: HashSet<u64, SeaHasher>,
     /// IDs of [DroppedResource]s in the room.
-    pub dropped_resources: Vec<u64>,
+    pub dropped_resources: HashSet<u64, SeaHasher>,
 }
 
 impl Default for Room {
@@ -44,16 +47,16 @@ impl Default for Room {
         Self {
             posx: 0,
             posy: 0,
-            creeps: Vec::new(),
+            creeps: HashSet::with_hasher(SeaHasher::new()),
             terrain: [0; 625],
-            structures: Vec::new(),
-            energy_sources: Vec::new(),
+            structures: HashSet::with_hasher(SeaHasher::new()),
+            energy_sources: HashSet::with_hasher(SeaHasher::new()),
             mineral_source: None,
             commodity_source: None,
-            construction_sites: Vec::new(),
-            ruins: Vec::new(),
-            tombstones: Vec::new(),
-            dropped_resources: Vec::new(),
+            construction_sites: HashSet::with_hasher(SeaHasher::new()),
+            ruins: HashSet::with_hasher(SeaHasher::new()),
+            tombstones: HashSet::with_hasher(SeaHasher::new()),
+            dropped_resources: HashSet::with_hasher(SeaHasher::new()),
         }
     }
 }
