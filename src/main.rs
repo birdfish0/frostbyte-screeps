@@ -21,6 +21,7 @@ use crate::utils::recursive_avg::RecursiveAvg;
 mod consts;
 mod game;
 mod utils;
+mod server;
 
 fn window_conf() -> Conf {
     Conf {
@@ -59,64 +60,14 @@ async fn main() {
 
     info!("Setup server thread");
 
-    let server_thread = thread::spawn(move || {
-        let mut game_state = GameState::new();
-        let mut event_queue = EventQueue::new();
-        let mut stop = false;
-        while !stop {
-            while !rx_srv.is_empty() {
-                match rx_srv.recv() {
-                    Ok(msg) => {
-                        match msg {
-                            RenderToServerThreadMsg::Quit => {
-                                stop = true;
-                            },
-                            RenderToServerThreadMsg::Pause(paused) => {
-                                game_state.paused = paused;
-                            },
-                            RenderToServerThreadMsg::ForceTickDelay(delay) => {
-                                game_state.force_tick_delay = delay;
-                            },
-                            RenderToServerThreadMsg::LoadMapFile(filepath) => {
-                                let file = fs::File::open(&filepath);
-                                if file.is_err() {
-                                    error!("Failed to read map file {}: {}", filepath, file.err().unwrap());
-                                }
-                                else {
-                                    let mut data = String::new();
-                                    match file.unwrap().read_to_string(&mut data) {
-                                        Err(err) => {
-                                            error!("Failed to read map file {}: {}", filepath, err)
-                                        },
-                                        Ok(_) => {
-                                            game_state.load_rooms_from_json(&data);
-                                        }
-                                    }
-                                }
-                            },
-                            RenderToServerThreadMsg::RequestFullState => {
-                                tx_state.send(game_state.clone());
-                            }
-                        }
-                    }
-                    Err(err) => {
-                        error!("Failed to read message from render thread: {}", err);
-                    }
-                }
-            }
-            game_state.tick(&mut event_queue);
-            if game_state.force_tick_delay > 0 {
-                thread::sleep(Duration::from_nanos(game_state.force_tick_delay as u64));
-            }
-        }
-        info!("SERVER: Server thread stopping");
-    });
+    let server_thread = thread::spawn(move || { server::run_loop(rx_srv, tx_state, rx_srv_state) });
 
     info!("Loading map data");
 
     tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()));
 
     info!("Setup render-thread gamestate");
+
     let mut render_gamestate = GameState::new();
 
     let mut game_state_update_interval: f32 = 0.1;
