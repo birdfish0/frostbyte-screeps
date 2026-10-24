@@ -31,6 +31,12 @@ pub struct Room {
     pub commodity_source: Option<u64>,
     /// IDs of construction sites in the room.
     pub construction_sites: Vec<u64>,
+    /// IDs of ruins in the room.
+    pub ruins: Vec<u64>,
+    /// IDs of tombstones in the room.
+    pub tombstones: Vec<u64>,
+    /// IDs of dropped resources in the room.
+    pub dropped_resources: Vec<u64>,
 }
 
 impl Default for Room {
@@ -45,6 +51,9 @@ impl Default for Room {
             mineral_source: None,
             commodity_source: None,
             construction_sites: Vec::new(),
+            ruins: Vec::new(),
+            tombstones: Vec::new(),
+            dropped_resources: Vec::new(),
         }
     }
 }
