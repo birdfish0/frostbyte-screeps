@@ -1,3 +1,5 @@
+//! Provides the [RenderState] struct and functions and enums related to the render thread.
+
 use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
@@ -22,22 +24,37 @@ pub enum RenderToServerThreadMsg {
     RequestFullState,
 }
 
+/// Object containing the current state of the UI and the rendering thread.
+/// 
+/// Contains the render-thread version of the [GameState] object, which will not be ticked.
 #[derive(Clone, Debug)]
 pub struct RenderState {
+    /// Render-thread version of the [GameState] object, for drawing reference only. The [`tick`][GameState::tick] function will not be called on it.
     pub game_state: GameState,
+    /// The amount of time, in seconds, to wait in between each request of a game state update from the server thread (using [RenderToServerThreadMsg::RequestFullState]).
     pub game_state_update_interval: f32,
+    /// Time the last game state update was requested.
     pub last_game_state_update: Instant,
+    /// Time the last frame ended.
     pub last_frame_end: Instant,
+    /// A [RecursiveAvg] struct that stores the frame times, used in [Self::draw_ui] to get the average fps.
     pub frame_durations: RecursiveAvg,
+    /// The font used to draw the UI and other text. Defaults to `assets/CutiveMono-Regular.ttf`.
     pub font: Font,
+    /// Horizontal offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
     pub pan_offset_x: f32,
+    /// Horizontal offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
     pub pan_offset_y: f32,
+    /// When panning the world map, stores the mouse position when the dragging action began. Is [None] when not panning world map.
     pub mouse_drag_begin: Option<Vec2>,
+    /// Set to `true` for the frame when a new game state update is received from the server thread. Used in [Self::draw_ui] to draw the update indicator.
     pub got_game_state: bool,
+    /// Amount of time it took to draw the last frame, used in [Self::draw_ui] to calculate fps.
     pub latest_frame_duration: Duration,
 }
 
 impl RenderState {
+    /// Construct a new [RenderState]. Uses the `assets/CutiveMono-Regular.ttf` font by default.
     pub async fn new() -> Self {
         Self {
             game_state: GameState::new(),
@@ -59,8 +76,19 @@ impl RenderState {
         }
     }
 
+    /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset_x`] and [`Self::pan_offset_y`].
+    /// 
+    /// This should be called before drawing the contents of the room.
     pub fn draw_room_terrain(&self, posx: u8, posy: u8) {}
 
+    /// Draw the UI onto the screen.
+    /// 
+    /// This should be called after drawing all world objects.
+    /// 
+    /// ## Arguments
+    /// 
+    /// - `mouse_eaten`: Mutable bool reference, will be set to true if
+    /// the mouse is hovering over a UI element and therefore should not be used to zoom/pan the world.
     pub fn draw_ui(&self, mouse_eaten: &mut bool) {
         let top_bar_height = 30.0;
         draw_rectangle(0.0, 0.0, screen_width(), top_bar_height, UI_HIGH_BG_COLOR);
@@ -92,6 +120,7 @@ impl RenderState {
         }
     }
 
+    /// Run the main rendering loop. This will call the relevant draw functions to render the game.
     pub async fn render_loop(
         &mut self,
         tx: Sender<RenderToServerThreadMsg>,
