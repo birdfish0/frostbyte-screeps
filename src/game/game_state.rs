@@ -44,17 +44,7 @@ impl GameState {
             .collect::<Vec<_>>();
         for x in 0..MAP_SIZE_X {
             for y in 0..MAP_SIZE_Y {
-                rooms.get_mut(y).unwrap().push(Room {
-                    posx: x as u8,
-                    posy: y as u8,
-                    terrain: [0; 50],
-                    commodity_source: None,
-                    construction_sites: Vec::new(),
-                    creeps: Vec::new(),
-                    energy_sources: Vec::new(),
-                    mineral_source: None,
-                    structures: Vec::new(),
-                });
+                rooms.get_mut(y).unwrap().push(Room::default());
             }
         }
 
