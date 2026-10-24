@@ -107,15 +107,6 @@ pub struct CommoditySource {
 }
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
-pub enum MineralDensity {
-    #[default]
-    Low,
-    Medium,
-    High,
-    Ultra,
-}
-
-#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub struct Structure {
     pub id: u64,
     pub structure_type: StructureType,

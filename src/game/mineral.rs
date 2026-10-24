@@ -7,6 +7,15 @@ use crate::{
     game::*,
 };
 
+#[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
+pub enum MineralDensity {
+    #[default]
+    Low,
+    Medium,
+    High,
+    Ultra,
+}
+
 #[derive(Clone, Debug)]
 pub struct MineralSource {
     pub id: u64,
