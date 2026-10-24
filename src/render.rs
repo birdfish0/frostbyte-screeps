@@ -21,6 +21,7 @@ pub enum RenderToServerThreadMsg {
     RequestFullState,
 }
 
+#[derive(Clone, Debug)]
 pub struct RenderState {
     pub game_state: GameState,
     pub game_state_update_interval: f32,
