@@ -5,6 +5,7 @@ pub mod hash;
 pub mod icon;
 pub mod recursive_avg;
 
+use anyhow::{Error, bail, ensure};
 use log::error;
 use rand::{Rng, RngExt};
 
@@ -12,32 +13,31 @@ use rand::{Rng, RngExt};
 /// The random choice is weighted by the corresponding number in `weights`.
 /// Weights can be any number, so long as the sum of all weights is not 0.
 ///
-/// # Panics
+/// # Errors
 ///
-/// Panics if sum of all weights is 0.
+/// Returns error if sum of all weights is 0.
 ///
-/// Panics if the quantity of weights is not equal to the quantity of values provided.
-pub fn random_choice<T, R>(random: &mut R, vals: &[T], weights: &[u32]) -> T
+/// Returns error if the quantity of weights is not equal to the quantity of values provided.
+///
+/// Returns error if all choices are exhausted and no element has been chosen.
+/// (This should be impossble, but is covered anyway just in case.)
+pub fn random_choice<T, R>(random: &mut R, vals: &[T], weights: &[u32]) -> Result<T, Error>
 where
     R: Rng,
     T: Copy,
 {
-    if vals.len() != weights.len() {
-        error!(
-            "utils::random_choice panicked: Number of values should equal number of weights. (currently {} and {})",
-            vals.len(),
-            weights.len()
-        );
-        panic!("Number of values should equal number of weights.");
-    }
+    ensure!(
+        vals.len() == weights.len(),
+        "Number of values should equal number of weights. (currently {} and {})",
+        vals.len(),
+        weights.len()
+    );
     let total_weight: u32 = weights.iter().sum();
-    if total_weight == 0 {
-        error!(
-            "utils::random_choice panicked: Sum of all weights must not equal zero. (was provided with {} weights)",
-            weights.len()
-        );
-        panic!("Sum of all weights must not equal zero.");
-    }
+    ensure!(
+        total_weight != 0,
+        "Sum of all weights must not equal zero. (was provided with {} weights)",
+        weights.len()
+    );
     let mut now_weight = 0;
     let iterweight = weights.iter();
     let mut iterval = vals.iter();
@@ -45,10 +45,8 @@ where
         let v = iterval.next().unwrap(); // Safe unwrap, length confirmed before
         now_weight += w;
         if random.random_ratio(now_weight, total_weight) {
-            return *v;
+            return Ok(*v);
         }
     }
-    unreachable!(
-        "random_ratio should always return true when numerator and denominator are equal."
-    );
+    bail!("random_ratio should always return true when numerator and denominator are equal.");
 }

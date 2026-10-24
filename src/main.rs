@@ -3,7 +3,7 @@
 #![allow(unused)]
 
 use crossbeam_channel::{Receiver, Sender, bounded, unbounded};
-use log::{error, info, debug};
+use log::{debug, error, info};
 use log4rs::config::Deserializers;
 use macroquad::prelude::*;
 use std::fs;
@@ -45,7 +45,7 @@ async fn main() {
     let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new())
         .expect("Invalid logger configuration");
     log4rs::init_config(config);
-    
+
     macroquad::input::prevent_quit();
 
     debug!("Logger initialized");

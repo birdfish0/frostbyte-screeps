@@ -1,5 +1,6 @@
 //! Contains the [RecursiveAvg] struct and its implementation.
 
+use anyhow::ensure;
 use log::{error, info};
 
 /// Uses multiple lists to keep track of the rolling average over a very large window size without storing the entire dataset.
@@ -85,23 +86,18 @@ impl RecursiveAvg {
     /// - `num_els`: See the docs of the struct on [`num_els`][RecursiveAvg::num_els] for more information.
     /// - `sum_mode`: See the docs of the struct on [`sum_mode`][RecursiveAvg::sum_mode] for more information.
     ///
-    /// ## Panics
+    /// ## Errors
     ///
-    /// Panics if `num_els.len() == 0`.
+    /// Returns error if `num_els.len() == 0`.
     ///
-    /// Panics if `num_els` contains a 0.
-    pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Self {
-        if num_els.is_empty() {
-            error!("utils::recursive_avg::RecursiveAvg::new panicked: num_els must not be empty.");
-            panic!("num_els must not be empty.");
-        }
-        if num_els.contains(&0) {
-            error!(
-                "utils::recursive_avg::RecursiveAvg::new panicked: num_els must not contain a 0. (num_els: {:?})",
-                num_els
-            );
-            panic!("num_els must not contain a 0.");
-        }
+    /// Returns error if `num_els` contains a 0.
+    pub fn new(num_els: Vec<usize>, sum_mode: bool) -> Result<Self, anyhow::Error> {
+        ensure!(!num_els.is_empty(), "num_els must not be empty.");
+        ensure!(
+            !num_els.contains(&0),
+            "num_els must not contain a 0. (num_els: {:?})",
+            num_els
+        );
 
         let depth = num_els.len();
         let mut virtual_size: u128 = 1;
@@ -114,7 +110,7 @@ impl RecursiveAvg {
             lists.push(vec![0; *item]);
         }
 
-        RecursiveAvg {
+        Ok(RecursiveAvg {
             lists,
             progressions: vec![0; depth],
             current_window_size: 0,
@@ -124,7 +120,7 @@ impl RecursiveAvg {
             num_els,
             virtual_size,
             sum_mode,
-        }
+        })
     }
 
     /// Add a value to the dataset and increment [`Self::current_window_size`] if it is not equal to [`Self::virtual_size`].
@@ -187,5 +183,11 @@ impl RecursiveAvg {
                 .checked_div(self.lowest_filled_list_amount as u128)
                 .unwrap_or(0)
         }
+    }
+}
+
+impl Default for RecursiveAvg {
+    fn default() -> Self {
+        Self::new(vec![10, 10], false).unwrap() // Safe unwrap
     }
 }

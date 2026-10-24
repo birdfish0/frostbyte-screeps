@@ -1,3 +1,4 @@
+use log::error;
 use rand::Rng;
 
 use crate::{
@@ -55,7 +56,11 @@ impl MineralSource {
                         MINERAL_DENSITY_HIGH_CHANCE_PER1000,
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
-                ),
+                )
+                .unwrap_or_else(|err| {
+                    error!("Failed to generate new mineral density: {}", err);
+                    Default::default()
+                }),
                 MineralDensity::Medium => utils::random_choice(
                     rng,
                     &[
@@ -68,7 +73,11 @@ impl MineralSource {
                         MINERAL_DENSITY_HIGH_CHANCE_PER1000,
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
-                ),
+                )
+                .unwrap_or_else(|err| {
+                    error!("Failed to generate new mineral density: {}", err);
+                    Default::default()
+                }),
                 MineralDensity::High => utils::random_choice(
                     rng,
                     &[
@@ -81,7 +90,11 @@ impl MineralSource {
                         MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
                         MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
                     ],
-                ),
+                )
+                .unwrap_or_else(|err| {
+                    error!("Failed to generate new mineral density: {}", err);
+                    Default::default()
+                }),
                 MineralDensity::Ultra => utils::random_choice(
                     rng,
                     &[
@@ -94,7 +107,11 @@ impl MineralSource {
                         MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
                         MINERAL_DENSITY_HIGH_CHANCE_PER1000,
                     ],
-                ),
+                )
+                .unwrap_or_else(|err| {
+                    error!("Failed to generate new mineral density: {}", err);
+                    Default::default()
+                }),
             }
         }
         self.amount = match self.density {
