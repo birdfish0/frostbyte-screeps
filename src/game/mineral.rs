@@ -1,9 +1,10 @@
 use log::error;
 use rand::Rng;
+use utils::random::random_choice;
 
 use crate::{
+    event_queue::{self, EventCallback, QueuedEvent},
     game::*,
-    utils::event_queue::{self, EventCallback, QueuedEvent},
 };
 
 #[derive(Clone, Debug)]
@@ -44,7 +45,7 @@ impl MineralSource {
             || rng.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
         {
             self.density = match self.density {
-                MineralDensity::Low => utils::random_choice(
+                MineralDensity::Low => random_choice(
                     rng,
                     &[
                         MineralDensity::Medium,
@@ -61,7 +62,7 @@ impl MineralSource {
                     error!("Failed to generate new mineral density: {}", err);
                     Default::default()
                 }),
-                MineralDensity::Medium => utils::random_choice(
+                MineralDensity::Medium => random_choice(
                     rng,
                     &[
                         MineralDensity::Low,
@@ -78,7 +79,7 @@ impl MineralSource {
                     error!("Failed to generate new mineral density: {}", err);
                     Default::default()
                 }),
-                MineralDensity::High => utils::random_choice(
+                MineralDensity::High => random_choice(
                     rng,
                     &[
                         MineralDensity::Low,
@@ -95,7 +96,7 @@ impl MineralSource {
                     error!("Failed to generate new mineral density: {}", err);
                     Default::default()
                 }),
-                MineralDensity::Ultra => utils::random_choice(
+                MineralDensity::Ultra => random_choice(
                     rng,
                     &[
                         MineralDensity::Low,
