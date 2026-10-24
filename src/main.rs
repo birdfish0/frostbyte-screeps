@@ -45,6 +45,8 @@ async fn main() {
     let config = log4rs::config::load_config_file("logging.yaml", Deserializers::new())
         .expect("Invalid logger configuration");
     log4rs::init_config(config);
+    
+    macroquad::input::prevent_quit();
 
     info!("Logger initialized");
 
@@ -72,5 +74,6 @@ async fn main() {
     render_state
         .render_loop(tx, rx_state, tx_state_override)
         .await;
+
     server_thread.join();
 }

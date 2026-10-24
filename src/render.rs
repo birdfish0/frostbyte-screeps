@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use crossbeam_channel::{Receiver, Sender};
+use log::info;
 use macroquad::prelude::*;
 use macroquad::text::{Font, load_ttf_font};
 
@@ -116,8 +117,14 @@ impl RenderState {
 
             self.last_frame_end = Instant::now();
 
+            if macroquad::input::is_quit_requested() {
+                break;
+            }
+
             next_frame().await
         }
+
+        info!("Render loop stopped");
 
         tx.send(RenderToServerThreadMsg::Quit);
     }
