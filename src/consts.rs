@@ -1,13 +1,24 @@
+//! Provides constants used by the game engine and rendering engine for various things.
+//! 
+//! See also: <https://docs.screeps.com/api/#Constants>.
+
 use macroquad::color::Color;
 
+/// Background color for the world, before UI and rooms are drawn.
 pub const WORLD_BG_COLOR: Color = Color::from_hex(0x1b1b1b);
+/// Color for UI elements directly containing text.
 pub const UI_HIGH_BG_COLOR: Color = Color::from_hex(0x444444);
+/// Color for UI elements that act more as background panels.
 pub const UI_LOW_BG_COLOR: Color = Color::from_hex(0x2d2d2d);
 
+/// Color of the plains terrain. Used in [crate::render::RenderState::draw_room_terrain].
 pub const TERRAIN_PLAINS_COLOR: Color = Color::from_hex(0x2b2b2b);
+/// Color of the swamp terrain. Used in [crate::render::RenderState::draw_room_terrain].
 pub const TERRAIN_SWAMP_COLOR: Color = Color::from_hex(0x384425);
+/// Color of the wall terrain. Used in [crate::render::RenderState::draw_room_terrain].
 pub const TERRAIN_WALL_COLOR: Color = Color::from_hex(0x151515);
 
+/// Chance, in percent, of the mineral density to change when the timer runs out, given it is not of [Low][crate::game::mineral::MineralDensity::Low] or [Ultra][crate::game::mineral::MineralDensity::Ultra] density.
 pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 
 // In the game docs:
@@ -24,17 +35,40 @@ pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 // and High has an actual probability of (1 - 0.1) * (1 - 0.5) * 0.9 = 0.405
 // and Ultra has an actual probability of (1 - 0.1) * (1 - 0.5) * (1 - 0.9) = 0.045
 
+/// Calculated chance, out of 1000, for a mineral density roll to be [Low][crate::game::mineral::MineralDensity::Low].
+/// 
+/// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
+/// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_LOW_CHANCE_PER1000: u32 = 100; // 0.100
+/// Calculated chance, out of 1000, for a mineral density roll to be [Medium][crate::game::mineral::MineralDensity::Medium].
+/// 
+/// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
+/// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_MEDIUM_CHANCE_PER1000: u32 = 450; // 0.450
+/// Calculated chance, out of 1000, for a mineral density roll to be [High][crate::game::mineral::MineralDensity::High].
+/// 
+/// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
+/// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_HIGH_CHANCE_PER1000: u32 = 405; // 0.405
+/// Calculated chance, out of 1000, for a mineral density roll to be [Ultra][crate::game::mineral::MineralDensity::Ultra].
+/// 
+/// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
+/// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_ULTRA_CHANCE_PER1000: u32 = 45; // 0.045
 
+/// Quantity of mineral contained in a [Low][crate::game::mineral::MineralDensity::Low] density deposit when it is refreshed.
 pub const MINERAL_DENSITY_LOW_VALUE: u32 = 15000;
+/// Quantity of mineral contained in a [Low][crate::game::mineral::MineralDensity::Medium] density deposit when it is refreshed.
 pub const MINERAL_DENSITY_MEDIUM_VALUE: u32 = 35000;
+/// Quantity of mineral contained in a [Low][crate::game::mineral::MineralDensity::High] density deposit when it is refreshed.
 pub const MINERAL_DENSITY_HIGH_VALUE: u32 = 70000;
+/// Quantity of mineral contained in a [Low][crate::game::mineral::MineralDensity::Ultra] density deposit when it is refreshed.
 pub const MINERAL_DENSITY_ULTRA_VALUE: u32 = 100000;
 
+/// Number of ticks between mineral refreshes.
 pub const MINERAL_REGEN_TIME: u32 = 50000;
 
+/// Number of rooms contained in one row of the map. May not exceed 255.
 pub const MAP_SIZE_X: usize = 122;
+/// Number of rooms contained in one column of the map. May not exceed 255.
 pub const MAP_SIZE_Y: usize = 122;
