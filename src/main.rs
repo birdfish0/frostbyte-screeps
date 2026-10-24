@@ -1,6 +1,6 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
-#![allow(dead_code, reason="will use it later")]
+#![allow(dead_code, reason = "will use it later")]
 
 use crossbeam_channel::{bounded, unbounded};
 use log::{debug, error, info};
@@ -11,7 +11,7 @@ use std::thread;
 use crate::game::game_state::GameState;
 use crate::render::RenderState;
 use crate::render::{RenderToServerThreadMsg::LoadMapFile, *};
-use crate::utils::event_queue::self;
+use crate::utils::event_queue;
 
 mod consts;
 mod game;
@@ -59,7 +59,8 @@ async fn main() {
 
     debug!("Requesting map data load");
 
-    tx.send(LoadMapFile("assets/mmo-shard3.json".to_string())).expect("Failed to send LoadMapFile to server thread");
+    tx.send(LoadMapFile("assets/mmo-shard3.json".to_string()))
+        .expect("Failed to send LoadMapFile to server thread");
 
     debug!("Setup render-thread");
 

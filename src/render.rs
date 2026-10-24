@@ -4,8 +4,8 @@ use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
 use log::info;
+use macroquad::prelude::*;
 use macroquad::text::{Font, load_ttf_font};
-use macroquad::{prelude::*};
 
 use crate::consts::*;
 use crate::utils::mouse::mouse_within;
@@ -30,7 +30,7 @@ pub enum RenderToServerThreadMsg {
 }
 
 /// Object containing the current state of the UI and the rendering thread.
-/// 
+///
 /// Contains the render-thread version of the [GameState] object, which will not be ticked.
 #[derive(Clone, Debug)]
 pub struct RenderState {
@@ -82,18 +82,18 @@ impl RenderState {
     }
 
     /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset_x`] and [`Self::pan_offset_y`].
-    /// 
+    ///
     /// This should be called before drawing the contents of the room.
     pub fn draw_room_terrain(&self, posx: u8, posy: u8) {
         todo!("{} {}", posx, posy);
     }
 
     /// Draw the UI onto the screen.
-    /// 
+    ///
     /// This should be called after drawing all world objects.
-    /// 
+    ///
     /// ## Arguments
-    /// 
+    ///
     /// - `mouse_eaten`: Mutable bool reference, will be set to true if
     ///   the mouse is hovering over a UI element and therefore should not be used to zoom/pan the world.
     pub fn draw_ui(&self, mouse_eaten: &mut bool) {
@@ -132,8 +132,7 @@ impl RenderState {
         &mut self,
         tx: Sender<RenderToServerThreadMsg>,
         rx_state: Receiver<GameState>,
-        #[allow(unused, reason="will use later")]
-        tx_state_override: Sender<GameState>,
+        #[allow(unused, reason = "will use later")] tx_state_override: Sender<GameState>,
     ) {
         loop {
             self.latest_frame_duration = self.last_frame_end.elapsed();
@@ -143,9 +142,10 @@ impl RenderState {
             if self.last_game_state_update.elapsed().as_secs_f32() > self.game_state_update_interval
             {
                 self.last_game_state_update = Instant::now();
-                tx.send(RenderToServerThreadMsg::RequestFullState).unwrap_or_else(|err| {
-                    error!("Failed to request server game state: {}", err);
-                });
+                tx.send(RenderToServerThreadMsg::RequestFullState)
+                    .unwrap_or_else(|err| {
+                        error!("Failed to request server game state: {}", err);
+                    });
             }
 
             if !rx_state.is_empty() {

@@ -1,5 +1,5 @@
 //! Provides constants used by the game engine and rendering engine for various things.
-//! 
+//!
 //! See also: <https://docs.screeps.com/api/#Constants>.
 
 use macroquad::color::Color;
@@ -36,22 +36,22 @@ pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 // and Ultra has an actual probability of (1 - 0.1) * (1 - 0.5) * (1 - 0.9) = 0.045
 
 /// Calculated chance, out of 1000, for a mineral density roll to be [Low][crate::game::mineral::MineralDensity::Low].
-/// 
+///
 /// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
 /// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_LOW_CHANCE_PER1000: u32 = 100; // 0.100
 /// Calculated chance, out of 1000, for a mineral density roll to be [Medium][crate::game::mineral::MineralDensity::Medium].
-/// 
+///
 /// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
 /// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_MEDIUM_CHANCE_PER1000: u32 = 450; // 0.450
 /// Calculated chance, out of 1000, for a mineral density roll to be [High][crate::game::mineral::MineralDensity::High].
-/// 
+///
 /// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
 /// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_HIGH_CHANCE_PER1000: u32 = 405; // 0.405
 /// Calculated chance, out of 1000, for a mineral density roll to be [Ultra][crate::game::mineral::MineralDensity::Ultra].
-/// 
+///
 /// Note that this is not the chance any given mineral will change to this density, because one of the probabilities is eliminated
 /// when the mineral is forced to change densities.
 pub const MINERAL_DENSITY_ULTRA_CHANCE_PER1000: u32 = 45; // 0.045

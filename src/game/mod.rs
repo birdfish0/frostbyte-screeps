@@ -1,6 +1,6 @@
 //! Includes things directly relevant to the game content, such as the [GameState], or [Creep].
 
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use rand::{RngExt, rngs::SmallRng};
 
