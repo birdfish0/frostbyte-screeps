@@ -273,7 +273,7 @@ impl RenderState {
 
             if let Some(begin_pos) = self.mouse_drag_begin {
                 let delta = begin_pos - mouse_pos;
-                self.pan_offset += delta;
+                self.pan_offset += delta / self.view_scale;
             }
             if !mouse_eaten && any_mouse_btn_down {
                 self.mouse_drag_begin = Some(mouse_pos);
