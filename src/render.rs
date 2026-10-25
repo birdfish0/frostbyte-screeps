@@ -95,7 +95,7 @@ impl RenderState {
     /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset`] and scaled by [`Self::view_scale`].
     ///
     /// This should be called before drawing the contents of the room.
-    pub fn draw_room_terrain(&self, posx: u8, posy: u8) -> Result<(), Error> {
+    pub fn draw_room_terrain(&self, posx: u8, posy: u8, lod: u8) -> Result<(), Error> {
         let swidth = screen_width();
         let sheight = screen_height();
 
@@ -173,15 +173,18 @@ impl RenderState {
             ROOM_EDGE_COLOR,
         );
 
-        for ry in 0..50 {
-            for rx in 0..50 {
-                let terrain = room.get_terrain_at(rx, ry)?;
-                let x = (abs_room_corner.x + rx as f32 * TILE_SIZE + self.pan_offset.x)
+        let fifty = (50. / (lod as f32)).ceil() as u8;
+        for ry in 0..fifty {
+            for rx in 0..fifty {
+                let terrain = room.get_terrain_at(rx * lod, ry * lod)?;
+                let x = (abs_room_corner.x + (rx * lod) as f32 * TILE_SIZE + self.pan_offset.x)
                     * self.view_scale;
-                let y = (abs_room_corner.y + ry as f32 * TILE_SIZE + self.pan_offset.y)
+                let y = (abs_room_corner.y + (ry * lod) as f32 * TILE_SIZE + self.pan_offset.y)
                     * self.view_scale;
-                let w = TILE_SIZE * self.view_scale;
-                let h = TILE_SIZE * self.view_scale;
+                let w_scale = (rx * lod + lod).min(50) - rx * lod;
+                let h_scale = (ry * lod + lod).min(50) - ry * lod;
+                let w = TILE_SIZE * self.view_scale * w_scale as f32;
+                let h = TILE_SIZE * self.view_scale * h_scale as f32;
                 if x > swidth || x + w < 0. || y > sheight || y + h < 0. {
                     continue;
                 }
@@ -315,7 +318,7 @@ impl RenderState {
 
             for y in 0..MAP_SIZE_Y {
                 for x in 0..MAP_SIZE_X {
-                    self.draw_room_terrain(x as u8, y as u8)
+                    self.draw_room_terrain(x as u8, y as u8, (0.2 / self.view_scale).max(1.) as u8)
                         .unwrap_or_else(|err| {
                             error!("Error drawing room: {}", err);
                         });
