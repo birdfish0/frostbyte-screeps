@@ -292,38 +292,7 @@ impl RenderState {
 
             self.draw_ui(&mut mouse_eaten);
 
-            let mouse_pos = Vec2::from(mouse_position());
-            let any_mouse_btn_down = input::is_mouse_button_down(MouseButton::Left)
-                || input::is_mouse_button_down(MouseButton::Middle)
-                || input::is_mouse_button_down(MouseButton::Right);
-
-            if let Some(begin_pos) = self.mouse_drag_begin {
-                let delta = begin_pos - mouse_pos;
-                self.pan_offset -= delta / self.view_scale;
-            }
-            if !mouse_eaten && any_mouse_btn_down {
-                self.mouse_drag_begin = Some(mouse_pos);
-            } else {
-                self.mouse_drag_begin = None;
-            }
-
-            if !mouse_eaten {
-                let zdelta = input::mouse_wheel().1 / 240.;
-                if zdelta != 0. {
-                    let new_scale = self.view_scale * 2f32.powf(zdelta);
-                    // Point of interest = point where the mouse is hovering at the time of zoom
-
-                    // Map position of point of interest
-                    let poi_map_pos = mouse_pos / self.view_scale - self.pan_offset;
-                    // The position of the point of interest on the screen were the new zoom to be applied
-                    let new_poi_pos = (poi_map_pos + self.pan_offset) * new_scale;
-                    // Amount of pixels the new map needs to be shifted by to visually be scaled at the mouse position
-                    let vshift = mouse_pos - new_poi_pos;
-
-                    self.pan_offset += vshift / new_scale;
-                    self.view_scale = new_scale;
-                }
-            }
+            self.pan_and_zoom(mouse_eaten);
 
             self.last_frame_end = Instant::now();
 
@@ -339,5 +308,40 @@ impl RenderState {
         tx.send(RenderToServerThreadMsg::Quit).unwrap_or_else(|err| {
             error!("Failed to send stop command to server thread: {}. You may have to force-close the program.", err);
         });
+    }
+
+    pub fn pan_and_zoom(&mut self, mouse_eaten: bool) {
+        let mouse_pos = Vec2::from(mouse_position());
+        let any_mouse_btn_down = input::is_mouse_button_down(MouseButton::Left)
+            || input::is_mouse_button_down(MouseButton::Middle)
+            || input::is_mouse_button_down(MouseButton::Right);
+
+        if let Some(begin_pos) = self.mouse_drag_begin {
+            let delta = begin_pos - mouse_pos;
+            self.pan_offset -= delta / self.view_scale;
+        }
+        if !mouse_eaten && any_mouse_btn_down {
+            self.mouse_drag_begin = Some(mouse_pos);
+        } else {
+            self.mouse_drag_begin = None;
+        }
+
+        if !mouse_eaten {
+            let zdelta = input::mouse_wheel().1 / 240.;
+            if zdelta != 0. {
+                let new_scale = self.view_scale * 2f32.powf(zdelta);
+                // Point of interest = point where the mouse is hovering at the time of zoom
+
+                // Map position of point of interest
+                let poi_map_pos = mouse_pos / self.view_scale - self.pan_offset;
+                // The position of the point of interest on the screen were the new zoom to be applied
+                let new_poi_pos = (poi_map_pos + self.pan_offset) * new_scale;
+                // Amount of pixels the new map needs to be shifted by to visually be scaled at the mouse position
+                let vshift = mouse_pos - new_poi_pos;
+
+                self.pan_offset += vshift / new_scale;
+                self.view_scale = new_scale;
+            }
+        }
     }
 }
