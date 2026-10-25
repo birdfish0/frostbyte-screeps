@@ -260,6 +260,8 @@ impl RenderState {
             self.frame_durations
                 .add(self.latest_frame_duration.as_nanos());
 
+            self.last_frame_end = Instant::now();
+
             if !rx_state.is_empty() {
                 match rx_state.recv() {
                     Ok(state) => {
@@ -332,8 +334,6 @@ impl RenderState {
             self.draw_ui(&mut mouse_eaten);
 
             self.pan_and_zoom(mouse_eaten);
-
-            self.last_frame_end = Instant::now();
 
             if macroquad::input::is_quit_requested() {
                 break;
