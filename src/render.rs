@@ -105,6 +105,15 @@ impl RenderState {
             .unwrap()
             .get(posx as usize)
             .unwrap();
+
+        draw_rectangle(
+            -self.pan_offset.x * self.view_scale,
+            -self.pan_offset.y * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            TERRAIN_PLAINS_COLOR,
+        );
+
         for ry in 0..50 {
             for rx in 0..50 {
                 let terrain = room.get_terrain_at(rx, ry)?;
@@ -118,7 +127,7 @@ impl RenderState {
                     w,
                     h,
                     match terrain {
-                        TerrainTile::Plains => TERRAIN_PLAINS_COLOR,
+                        TerrainTile::Plains => continue,
                         TerrainTile::Wall => TERRAIN_WALL_COLOR,
                         TerrainTile::Swamp => TERRAIN_SWAMP_COLOR,
                         TerrainTile::Void => bail!(
