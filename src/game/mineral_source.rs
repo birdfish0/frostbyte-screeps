@@ -71,18 +71,23 @@ impl EventCallback for MineralRefreshEvent {
 }
 
 impl MineralSource {
+    /// Get the starting amount of resources that should be in a source with the given density.
+    pub fn density_to_amount(density: MineralDensity) -> u32 {
+        match density {
+            MineralDensity::Low => MINERAL_DENSITY_LOW_VALUE,
+            MineralDensity::Medium => MINERAL_DENSITY_MEDIUM_VALUE,
+            MineralDensity::High => MINERAL_DENSITY_HIGH_VALUE,
+            MineralDensity::Ultra => MINERAL_DENSITY_ULTRA_VALUE,
+        }
+    }
+
     /// Refresh the mineral source, using the provided random number generator to determine whether to change the density and what to change it to,
     /// then updating [Self::refresh_timer] according to `tick` and [crate::consts::MINERAL_REGEN_TIME].
     pub fn refresh<T>(&mut self, rng: &mut T, tick: u128)
     where
         T: Rng,
     {
-        self.amount = match self.density {
-            MineralDensity::Low => MINERAL_DENSITY_LOW_VALUE,
-            MineralDensity::Medium => MINERAL_DENSITY_MEDIUM_VALUE,
-            MineralDensity::High => MINERAL_DENSITY_HIGH_VALUE,
-            MineralDensity::Ultra => MINERAL_DENSITY_ULTRA_VALUE,
-        };
+        self.amount = Self::density_to_amount(self.density);
         if self.density == MineralDensity::Low
             || self.density == MineralDensity::Ultra
             || rng.random_ratio(MINERAL_DENSITY_CHANGE_CHANCE_PERCENT, 100)
