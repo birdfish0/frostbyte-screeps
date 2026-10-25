@@ -275,19 +275,6 @@ impl RenderState {
 
             clear_background(WORLD_BG_COLOR);
 
-            draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-            draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, BLACK);
-            draw_arc(
-                screen_width() - 30.0,
-                screen_height() - 30.0,
-                64,
-                14.0,
-                0.0,
-                5.0,
-                90.0,
-                YELLOW,
-            );
-
             for y in 0..122 {
                 for x in 0..122 {
                     self.draw_room_terrain(x, y).unwrap_or_else(|err| {
