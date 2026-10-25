@@ -75,7 +75,7 @@ impl RenderState {
             game_state_update_interval: 0.1,
             last_game_state_update: Instant::now(),
             last_frame_end: Instant::now(),
-            frame_durations: RecursiveAvg::new(vec![50, 20, 10], false).unwrap_or_else(|err| {
+            frame_durations: RecursiveAvg::new(vec![10, 5, 5], false).unwrap_or_else(|err| {
                 error!("Failed to create new RecursiveAvg: {}", err);
                 Default::default()
             }),
