@@ -275,6 +275,7 @@ impl Room {
                     self.terrain[idx] = dat;
                     shifts = 0;
                     idx += 1;
+                    dat = 0;
                 }
             }
         }
