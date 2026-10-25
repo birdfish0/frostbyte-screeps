@@ -4,8 +4,8 @@ use std::time::{Duration, Instant};
 
 use crossbeam_channel::{Receiver, Sender};
 use log::info;
-use macroquad::prelude::*;
 use macroquad::text::{Font, load_ttf_font};
+use macroquad::{input, prelude::*};
 
 use crate::consts::*;
 use crate::utils::mouse::mouse_within;
@@ -57,6 +57,12 @@ pub struct RenderState {
     pub got_game_state: bool,
     /// Amount of time it took to draw the last frame, used in [Self::draw_ui] to calculate fps.
     pub latest_frame_duration: Duration,
+    /// `true` if the renderer has already requested the game state over the [Sender] and hasn't received a response yet, `false` otherwise.
+    /// Used to prevent the renderer from repeatedly requesting gamestate and filling up the channel.
+    pub already_requested_gamestate: bool,
+    /// `true` if the renderer has modified its [Self::game_state] independently of the server packets, such as when the user makes a change,
+    /// in order to reduce visual latency.
+    pub predictive_desync: bool,
 }
 
 impl RenderState {
@@ -79,6 +85,8 @@ impl RenderState {
             mouse_drag_begin: None,
             latest_frame_duration: Duration::from_nanos(0),
             got_game_state: false,
+            already_requested_gamestate: false,
+            predictive_desync: false,
         }
     }
 
@@ -119,8 +127,17 @@ impl RenderState {
                 ..Default::default()
             },
         );
+        if self.predictive_desync {
+            draw_rectangle(5.0, 0.0, 5.0, 5.0, RED);
+        }
+        if self.already_requested_gamestate {
+            draw_rectangle(0.0, 0.0, 5.0, 5.0, ORANGE);
+        }
         if self.got_game_state {
             draw_rectangle(0.0, 0.0, 5.0, 5.0, GREEN);
+        }
+        if self.game_state.paused {
+            draw_rectangle(0.0, 5.0, 5.0, 5.0, ORANGE);
         }
 
         if mouse_within(0.0, 0.0, screen_width(), top_bar_height) {
@@ -140,21 +157,14 @@ impl RenderState {
             self.frame_durations
                 .add(self.latest_frame_duration.as_nanos());
 
-            if self.last_game_state_update.elapsed().as_secs_f32() > self.game_state_update_interval
-            {
-                self.last_game_state_update = Instant::now();
-                tx.send(RenderToServerThreadMsg::RequestFullState)
-                    .unwrap_or_else(|err| {
-                        error!("Failed to request server game state: {}", err);
-                    });
-            }
-
             if !rx_state.is_empty() {
                 match rx_state.recv() {
                     Ok(state) => {
                         self.game_state = state;
                         self.game_state.is_server = false;
                         self.got_game_state = true;
+                        self.already_requested_gamestate = false;
+                        self.predictive_desync = false;
                     }
                     Err(err) => {
                         self.got_game_state = false;
@@ -163,6 +173,27 @@ impl RenderState {
                 }
             } else {
                 self.got_game_state = false;
+            }
+
+            if !self.already_requested_gamestate
+                && self.last_game_state_update.elapsed().as_secs_f32()
+                    > self.game_state_update_interval
+            {
+                self.last_game_state_update = Instant::now();
+                tx.send(RenderToServerThreadMsg::RequestFullState)
+                    .unwrap_or_else(|err| {
+                        error!("Failed to request server game state: {}", err);
+                    });
+                self.already_requested_gamestate = true;
+            }
+
+            if input::is_key_pressed(KeyCode::P) {
+                if let Err(err) = tx.send(RenderToServerThreadMsg::Pause(!self.game_state.paused)) {
+                    error!("Failed to send pause request to server: {}", err);
+                } else {
+                    self.game_state.paused = !self.game_state.paused;
+                    self.predictive_desync = true;
+                }
             }
 
             let mut mouse_eaten = false;

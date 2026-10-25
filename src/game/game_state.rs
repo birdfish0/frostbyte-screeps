@@ -51,7 +51,7 @@ impl GameState {
         let mut rng = SmallRng::seed_from_u64(4);
 
         Self {
-            paused: false,
+            paused: true,
             tick: 0,
             force_tick_delay: 0,
             tick_durations: RecursiveAvg::new(vec![256, 32, 32], true).unwrap_or_else(|err| {
@@ -78,16 +78,18 @@ impl GameState {
     /// Run a single tick of the game. `event_queue` is provided separately here (instead of being stored in the GameState directly) because
     /// some events need to modify the [GameState], which is difficult to do when the event queue is contained within the GameState object.
     pub fn tick(&mut self, event_queue: &mut EventQueue) {
-        let tick_duration = self.last_tick_time.elapsed();
-        self.tick_durations.add(tick_duration.as_nanos());
-        self.tick += 1;
+        if !self.paused {
+            let tick_duration = self.last_tick_time.elapsed();
+            self.tick_durations.add(tick_duration.as_nanos());
+            self.tick += 1;
 
-        while let Some(intent) = self.intents.pop_front() {
-            self.process_intent(intent);
+            while let Some(intent) = self.intents.pop_front() {
+                self.process_intent(intent);
+            }
+
+            event_queue.tick(self.tick, self);
+            self.last_tick_time = Instant::now();
         }
-
-        event_queue.tick(self.tick, self);
-        self.last_tick_time = Instant::now();
     }
 
     /// Process an [Intent] and change the game state accordingly.
