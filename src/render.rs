@@ -114,6 +114,9 @@ impl RenderState {
             TERRAIN_PLAINS_COLOR,
         );
 
+        let swidth = screen_width();
+        let sheight = screen_height();
+
         for ry in 0..50 {
             for rx in 0..50 {
                 let terrain = room.get_terrain_at(rx, ry)?;
@@ -121,6 +124,9 @@ impl RenderState {
                 let y = (ry as f32 * TILE_SIZE + self.pan_offset.y) * self.view_scale;
                 let w = TILE_SIZE * self.view_scale;
                 let h = TILE_SIZE * self.view_scale;
+                if x > swidth || x + w < 0. || y > sheight || y + h < 0. {
+                    continue;
+                }
                 draw_rectangle(
                     x,
                     y,
