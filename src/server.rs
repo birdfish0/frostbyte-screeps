@@ -81,7 +81,7 @@ pub fn run_loop(
         if game_state.force_tick_delay > 0 {
             thread::sleep(Duration::from_nanos(game_state.force_tick_delay as u64));
         } else if game_state.paused {
-            thread::sleep(Duration::from_secs_f32(0.01));
+            thread::sleep(Duration::from_secs_f32(0.1));
         }
     }
     info!("Server thread stopping");
