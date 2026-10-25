@@ -99,13 +99,13 @@ impl RenderState {
         let swidth = screen_width();
         let sheight = screen_height();
 
-        let room_corner = (Vec2 {
+        let abs_room_corner = Vec2 {
             x: posx as f32,
             y: posy as f32,
         } * 50.
-            * TILE_SIZE
-            + self.pan_offset)
-            * self.view_scale;
+            * TILE_SIZE;
+
+        let room_corner = (abs_room_corner + self.pan_offset) * self.view_scale;
         let room_size = Vec2 {
             x: 50. * self.view_scale * TILE_SIZE,
             y: 50. * self.view_scale * TILE_SIZE,
@@ -130,8 +130,8 @@ impl RenderState {
             .unwrap();
 
         draw_rectangle(
-            self.pan_offset.x * self.view_scale,
-            self.pan_offset.y * self.view_scale,
+            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
+            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
             50. * TILE_SIZE * self.view_scale,
             50. * TILE_SIZE * self.view_scale,
             TERRAIN_PLAINS_COLOR,
@@ -140,8 +140,10 @@ impl RenderState {
         for ry in 0..50 {
             for rx in 0..50 {
                 let terrain = room.get_terrain_at(rx, ry)?;
-                let x = (rx as f32 * TILE_SIZE + self.pan_offset.x) * self.view_scale;
-                let y = (ry as f32 * TILE_SIZE + self.pan_offset.y) * self.view_scale;
+                let x = (abs_room_corner.x + rx as f32 * TILE_SIZE + self.pan_offset.x)
+                    * self.view_scale;
+                let y = (abs_room_corner.y + ry as f32 * TILE_SIZE + self.pan_offset.y)
+                    * self.view_scale;
                 let w = TILE_SIZE * self.view_scale;
                 let h = TILE_SIZE * self.view_scale;
                 if x > swidth || x + w < 0. || y > sheight || y + h < 0. {
@@ -286,9 +288,13 @@ impl RenderState {
                 YELLOW,
             );
 
-            self.draw_room_terrain(0, 0).unwrap_or_else(|err| {
-                error!("Error drawing room: {}", err);
-            });
+            for y in 0..122 {
+                for x in 0..122 {
+                    self.draw_room_terrain(x, y).unwrap_or_else(|err| {
+                        error!("Error drawing room: {}", err);
+                    });
+                }
+            }
 
             self.draw_ui(&mut mouse_eaten);
 
