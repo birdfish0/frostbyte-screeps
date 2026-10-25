@@ -92,7 +92,7 @@ impl RenderState {
         }
     }
 
-    /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset_x`] and [`Self::pan_offset_y`].
+    /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset`] and scaled by [`Self::view_scale`].
     ///
     /// This should be called before drawing the contents of the room.
     pub fn draw_room_terrain(&self, posx: u8, posy: u8) -> Result<(), Error> {
