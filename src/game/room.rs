@@ -242,8 +242,8 @@ impl Room {
         };
 
         let ret1 = match ns {
-            'N' => remainder + 61,
-            'S' => 60 - remainder,
+            'S' => remainder + 61,
+            'N' => 60 - remainder,
             _ => 0,
         };
 
