@@ -48,7 +48,7 @@ pub struct RenderState {
     pub frame_durations: RecursiveAvg,
     /// The font used to draw the UI and other text. Defaults to `assets/CutiveMono-Regular.ttf`.
     pub font: Font,
-    /// Horizontal offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
+    /// Offset of the world map, before scaling, from the position where its top-left corner is positioned at the top-left of the window.
     pub pan_offset: Vec2,
     /// Scale of the map, as changed by scroll wheel. At 1.0, each room tile is [TILE_SIZE] pixels big.
     /// Their size is multiplied by `view_scale` when being drawn.
