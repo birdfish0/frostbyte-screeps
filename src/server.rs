@@ -1,3 +1,5 @@
+//! Provides the [run_loop] function, in charge of all server thread logic.
+
 use std::{fs, io::Read, thread, time::Duration};
 
 use crossbeam_channel::{Receiver, Sender};
