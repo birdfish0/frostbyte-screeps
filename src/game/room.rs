@@ -121,9 +121,9 @@ impl Room {
     pub fn get_terrain_at(&self, x: u8, y: u8) -> Result<TerrainTile, Error> {
         ensure!(x < 50, "X coordinate of terrain tile out of range: {}", x);
         ensure!(y < 50, "Y coordinate of terrain tile out of range: {}", y);
-        let byte_offset = (x + y * 50 / 4) as usize;
-        let bit_offset = x + y * 50 % 4;
-        let data = self.terrain[byte_offset] << bit_offset & 0b11000000;
+        let byte_offset = (x as usize * 2 + y as usize * 100) / 8;
+        let bit_offset = (x as usize * 2 + y as usize * 100) % 8;
+        let data = (self.terrain[byte_offset] << bit_offset & 0b11000000) >> 6;
         Ok(TerrainTile::from(data))
     }
 
