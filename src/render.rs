@@ -96,6 +96,29 @@ impl RenderState {
     ///
     /// This should be called before drawing the contents of the room.
     pub fn draw_room_terrain(&self, posx: u8, posy: u8) -> Result<(), Error> {
+        let swidth = screen_width();
+        let sheight = screen_height();
+
+        let room_corner = (Vec2 {
+            x: posx as f32,
+            y: posy as f32,
+        } * 50.
+            * TILE_SIZE
+            + self.pan_offset)
+            * self.view_scale;
+        let room_size = Vec2 {
+            x: 50. * self.view_scale * TILE_SIZE,
+            y: 50. * self.view_scale * TILE_SIZE,
+        };
+
+        if room_corner.x + room_size.x < 0.
+            || room_corner.y + room_size.y < 0.
+            || room_corner.x > swidth
+            || room_corner.y > sheight
+        {
+            return Ok(());
+        }
+
         ensure!(posx < 50, "Room X coordinate out of range: {}", posx);
         ensure!(posy < 50, "Room Y coordinate out of range: {}", posy);
         let room = self
@@ -113,9 +136,6 @@ impl RenderState {
             50. * TILE_SIZE * self.view_scale,
             TERRAIN_PLAINS_COLOR,
         );
-
-        let swidth = screen_width();
-        let sheight = screen_height();
 
         for ry in 0..50 {
             for rx in 0..50 {
