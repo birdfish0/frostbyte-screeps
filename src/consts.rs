@@ -17,6 +17,8 @@ pub const TERRAIN_PLAINS_COLOR: Color = Color::from_hex(0x2b2b2b);
 pub const TERRAIN_SWAMP_COLOR: Color = Color::from_hex(0x384425);
 /// Color of the wall terrain. Used in [crate::render::RenderState::draw_room_terrain].
 pub const TERRAIN_WALL_COLOR: Color = Color::from_hex(0x151515);
+/// Color of the terrain at the very edge of rooms.
+pub const ROOM_EDGE_COLOR: Color = Color::from_hex(0x3b3b3b);
 
 /// Chance, in percent, of the mineral density to change when the timer runs out, given it is not of [Low][crate::game::mineral_source::MineralDensity::Low] or [Ultra][crate::game::mineral_source::MineralDensity::Ultra] density.
 pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;

@@ -136,6 +136,34 @@ impl RenderState {
             50. * TILE_SIZE * self.view_scale,
             TERRAIN_PLAINS_COLOR,
         );
+        draw_rectangle(
+            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
+            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
+            1. * TILE_SIZE * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
+            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            1. * TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            (abs_room_corner.x + 49.0 * TILE_SIZE + self.pan_offset.x) * self.view_scale,
+            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
+            1. * TILE_SIZE * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
+            (abs_room_corner.y + 49.0 * TILE_SIZE + self.pan_offset.y) * self.view_scale,
+            50. * TILE_SIZE * self.view_scale,
+            1. * TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
 
         for ry in 0..50 {
             for rx in 0..50 {
