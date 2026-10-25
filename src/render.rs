@@ -107,8 +107,8 @@ impl RenderState {
             .unwrap();
 
         draw_rectangle(
-            -self.pan_offset.x * self.view_scale,
-            -self.pan_offset.y * self.view_scale,
+            self.pan_offset.x * self.view_scale,
+            self.pan_offset.y * self.view_scale,
             50. * TILE_SIZE * self.view_scale,
             50. * TILE_SIZE * self.view_scale,
             TERRAIN_PLAINS_COLOR,
@@ -117,8 +117,8 @@ impl RenderState {
         for ry in 0..50 {
             for rx in 0..50 {
                 let terrain = room.get_terrain_at(rx, ry)?;
-                let x = (rx as f32 * TILE_SIZE - self.pan_offset.x) * self.view_scale;
-                let y = (ry as f32 * TILE_SIZE - self.pan_offset.y) * self.view_scale;
+                let x = (rx as f32 * TILE_SIZE + self.pan_offset.x) * self.view_scale;
+                let y = (ry as f32 * TILE_SIZE + self.pan_offset.y) * self.view_scale;
                 let w = TILE_SIZE * self.view_scale;
                 let h = TILE_SIZE * self.view_scale;
                 draw_rectangle(
@@ -273,12 +273,30 @@ impl RenderState {
 
             if let Some(begin_pos) = self.mouse_drag_begin {
                 let delta = begin_pos - mouse_pos;
-                self.pan_offset += delta / self.view_scale;
+                self.pan_offset -= delta / self.view_scale;
             }
             if !mouse_eaten && any_mouse_btn_down {
                 self.mouse_drag_begin = Some(mouse_pos);
             } else {
                 self.mouse_drag_begin = None;
+            }
+
+            if !mouse_eaten {
+                let zdelta = input::mouse_wheel().1 / 240.;
+                if zdelta != 0. {
+                    let new_scale = self.view_scale * 2f32.powf(zdelta);
+                    // Point of interest = point where the mouse is hovering at the time of zoom
+
+                    // Map position of point of interest
+                    let poi_map_pos = mouse_pos / self.view_scale - self.pan_offset;
+                    // The position of the point of interest on the screen were the new zoom to be applied
+                    let new_poi_pos = (poi_map_pos + self.pan_offset) * new_scale;
+                    // Amount of pixels the new map needs to be shifted by to visually be scaled at the mouse position
+                    let vshift = mouse_pos - new_poi_pos;
+
+                    self.pan_offset += vshift / new_scale;
+                    self.view_scale = new_scale;
+                }
             }
 
             self.last_frame_end = Instant::now();
