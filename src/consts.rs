@@ -74,4 +74,4 @@ pub const MAP_SIZE_X: usize = 122;
 pub const MAP_SIZE_Y: usize = 122;
 
 /// Size of each tile in pixels when the map zoom is unmodified.
-pub const TILE_SIZE: f32 = 50.;
+pub const TILE_SIZE: f32 = 20.;

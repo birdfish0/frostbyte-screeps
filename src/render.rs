@@ -2,12 +2,14 @@
 
 use std::time::{Duration, Instant};
 
+use anyhow::{Error, bail, ensure};
 use crossbeam_channel::{Receiver, Sender};
-use log::info;
+use log::{error, info};
 use macroquad::text::{Font, load_ttf_font};
 use macroquad::{input, prelude::*};
 
 use crate::consts::*;
+use crate::game::room::TerrainTile;
 use crate::utils::mouse::mouse_within;
 use crate::{game::game_state::GameState, utils::recursive_avg::RecursiveAvg};
 
@@ -93,8 +95,44 @@ impl RenderState {
     /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset_x`] and [`Self::pan_offset_y`].
     ///
     /// This should be called before drawing the contents of the room.
-    pub fn draw_room_terrain(&self, posx: u8, posy: u8) {
-        todo!("{} {}", posx, posy);
+    pub fn draw_room_terrain(&self, posx: u8, posy: u8) -> Result<(), Error> {
+        ensure!(posx < 50, "Room X coordinate out of range: {}", posx);
+        ensure!(posy < 50, "Room Y coordinate out of range: {}", posy);
+        let room = self
+            .game_state
+            .rooms
+            .get(posy as usize)
+            .unwrap()
+            .get(posx as usize)
+            .unwrap();
+        for ry in 0..50 {
+            for rx in 0..50 {
+                let terrain = room.get_terrain_at(rx, ry)?;
+                let x = (rx as f32 * TILE_SIZE - self.pan_offset.x) * self.view_scale;
+                let y = (ry as f32 * TILE_SIZE - self.pan_offset.y) * self.view_scale;
+                let w = TILE_SIZE * self.view_scale;
+                let h = TILE_SIZE * self.view_scale;
+                draw_rectangle(
+                    x,
+                    y,
+                    w,
+                    h,
+                    match terrain {
+                        TerrainTile::Plains => TERRAIN_PLAINS_COLOR,
+                        TerrainTile::Wall => TERRAIN_WALL_COLOR,
+                        TerrainTile::Swamp => TERRAIN_SWAMP_COLOR,
+                        TerrainTile::Void => bail!(
+                            "Unexpected Void tile returned in room at ({}, {}) at position {}, {}",
+                            posx,
+                            posy,
+                            rx,
+                            ry
+                        ),
+                    },
+                );
+            }
+        }
+        Ok(())
     }
 
     /// Draw the UI onto the screen.
@@ -212,6 +250,10 @@ impl RenderState {
                 90.0,
                 YELLOW,
             );
+
+            self.draw_room_terrain(0, 0).unwrap_or_else(|err| {
+                error!("Error drawing room: {}", err);
+            });
 
             self.draw_ui(&mut mouse_eaten);
 
