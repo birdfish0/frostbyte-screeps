@@ -1,3 +1,7 @@
+//! Provides the [MineralSource] struct and its implementation, as well as related definitions like [MineralDensity].
+//!
+//! Structs and functions related to scheduling mineral source refresh are also defined here.
+
 use log::error;
 use rand::Rng;
 use utils::random::random_choice;
@@ -7,6 +11,11 @@ use crate::{
     game::*,
 };
 
+/// Density of a [MineralSource]. This determines the amount of minerals it will contain on next refresh.
+///
+/// See [crate::consts::MINERAL_DENSITY_LOW_VALUE], [crate::consts::MINERAL_DENSITY_MEDIUM_VALUE],
+/// [crate::consts::MINERAL_DENSITY_HIGH_VALUE], and [crate::consts::MINERAL_DENSITY_ULTRA_VALUE]
+/// for the exact values of the amount of minerals for each density level.
 #[derive(PartialEq, Eq, Copy, Clone, Debug, Default)]
 pub enum MineralDensity {
     #[default]
@@ -16,18 +25,35 @@ pub enum MineralDensity {
     Ultra,
 }
 
+/// Object representing a mineral source within a room. Contains a limited amount of minerals that can be harvested through an
+/// [Extractor][StructureType::Extractor] [Structure] and a [Creep] with a [Work][CreepPart::Work] part (or upgraded Work part).
 #[derive(Clone, Debug)]
 pub struct MineralSource {
+    /// Unique identifier of the MineralSource.
     pub id: u64,
+    /// Type of mineral the source provides. It should be one of
+    /// [ResourceType::Hydrogen],
+    /// [ResourceType::Oxygen],
+    /// [ResourceType::Utrium],
+    /// [ResourceType::Keanium],
+    /// [ResourceType::Lemergium],
+    /// [ResourceType::Zynthium],
+    /// [ResourceType::Catalyst].
     pub mineral_type: ResourceType,
+    /// The position and [Room] of the mineral.
     pub pos: RoomPos,
+    /// The amount of minerals currently left in this source.
     pub amount: u32,
+    /// The [tick][field@GameState::tick] when this mineral will refresh.
     pub refresh_timer: u128,
+    /// Density of the mineral source that will be used upon next refresh.
     pub density: MineralDensity,
 }
 
+/// Scheduled event that refreshes a [MineralSource] and changes its [density][MineralSource::density] if need be.
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub struct MineralRefreshEvent {
+    /// ID of the [MineralSource] to refresh.
     pub id: u64,
 }
 
@@ -45,6 +71,8 @@ impl EventCallback for MineralRefreshEvent {
 }
 
 impl MineralSource {
+    /// Refresh the mineral source, using the provided random number generator to determine whether to change the density and what to change it to,
+    /// then updating [Self::refresh_timer] according to `tick` and [crate::consts::MINERAL_REGEN_TIME].
     pub fn refresh<T>(&mut self, rng: &mut T, tick: u128)
     where
         T: Rng,
