@@ -266,6 +266,21 @@ impl RenderState {
 
             self.draw_ui(&mut mouse_eaten);
 
+            let mouse_pos = Vec2::from(mouse_position());
+            let any_mouse_btn_down = input::is_mouse_button_down(MouseButton::Left)
+                || input::is_mouse_button_down(MouseButton::Middle)
+                || input::is_mouse_button_down(MouseButton::Right);
+
+            if let Some(begin_pos) = self.mouse_drag_begin {
+                let delta = begin_pos - mouse_pos;
+                self.pan_offset += delta;
+            }
+            if !mouse_eaten && any_mouse_btn_down {
+                self.mouse_drag_begin = Some(mouse_pos);
+            } else {
+                self.mouse_drag_begin = None;
+            }
+
             self.last_frame_end = Instant::now();
 
             if macroquad::input::is_quit_requested() {
