@@ -119,8 +119,16 @@ impl RenderState {
             return Ok(());
         }
 
-        ensure!(posx < 50, "Room X coordinate out of range: {}", posx);
-        ensure!(posy < 50, "Room Y coordinate out of range: {}", posy);
+        ensure!(
+            posx < MAP_SIZE_X as u8,
+            "Room X coordinate out of range: {}",
+            posx
+        );
+        ensure!(
+            posy < MAP_SIZE_Y as u8,
+            "Room Y coordinate out of range: {}",
+            posy
+        );
         let room = self
             .game_state
             .rooms
