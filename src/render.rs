@@ -275,11 +275,12 @@ impl RenderState {
 
             clear_background(WORLD_BG_COLOR);
 
-            for y in 0..122 {
-                for x in 0..122 {
-                    self.draw_room_terrain(x, y).unwrap_or_else(|err| {
-                        error!("Error drawing room: {}", err);
-                    });
+            for y in 0..MAP_SIZE_Y {
+                for x in 0..MAP_SIZE_X {
+                    self.draw_room_terrain(x as u8, y as u8)
+                        .unwrap_or_else(|err| {
+                            error!("Error drawing room: {}", err);
+                        });
                 }
             }
 
