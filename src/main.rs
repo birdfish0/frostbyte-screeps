@@ -28,8 +28,8 @@ fn window_conf() -> Conf {
             "../assets/icon_small.bmp"
         )),
         high_dpi: true,
-        window_width: 1300,
-        window_height: 800,
+        window_width: 1920,
+        window_height: 1080,
         ..Default::default()
     }
 }
