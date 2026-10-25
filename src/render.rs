@@ -312,6 +312,23 @@ impl RenderState {
                 }
             }
 
+            if !mouse_eaten {
+                let highlight = ((((Vec2::from(mouse_position()) / self.view_scale
+                    - self.pan_offset)
+                    / TILE_SIZE)
+                    .floor()
+                    * TILE_SIZE)
+                    + self.pan_offset)
+                    * self.view_scale;
+                draw_rectangle(
+                    highlight.x,
+                    highlight.y,
+                    TILE_SIZE * self.view_scale,
+                    TILE_SIZE * self.view_scale,
+                    CURSOR_HIGHLIGHT_COLOR,
+                );
+            }
+
             self.draw_ui(&mut mouse_eaten);
 
             self.pan_and_zoom(mouse_eaten);
