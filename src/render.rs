@@ -102,6 +102,7 @@ impl RenderState {
         }
     }
 
+    /// Generate the image for the terrain (one pixel per tile) in the room at (posx, posy) on the map, using the rooms parameter passed in.
     pub fn room_terrain_image(
         rooms: &Vec<Vec<Room>>,
         posx: usize,
