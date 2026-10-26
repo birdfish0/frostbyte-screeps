@@ -73,7 +73,13 @@ pub struct RenderState {
     /// This is set to `true` on the frame that the terrain altas generation thread completes so the UI drawer can render the warning text,
     /// and the actual population of the [`Self::terrain_atlas`] happens on the next frame.
     pub terrain_atlas_made: bool,
+    /// The momentum of the map movement, applied after the mouse is released.
+    pub momentum: Vec2,
 }
+
+/// Amount the [momentum][RenderState::momentum] of map movement is decayed by every second. (`momentum -= momentum * MOMENTUM_DECAY * frame_delta`)
+/// (multiplied by frame delta)
+const MOMENTUM_DECAY: f32 = 5.;
 
 impl RenderState {
     /// Construct a new [RenderState]. Uses the `assets/CutiveMono-Regular.ttf` font by default.
@@ -99,6 +105,7 @@ impl RenderState {
             predictive_desync: false,
             terrain_atlas: Box::new(Texture2D::empty()),
             terrain_atlas_made: false,
+            momentum: Vec2::ZERO,
         }
     }
 
@@ -449,12 +456,16 @@ impl RenderState {
 
         if let Some(begin_pos) = self.mouse_drag_begin {
             let delta = begin_pos - mouse_pos;
+            self.momentum = delta / self.view_scale / self.latest_frame_duration.as_secs_f32();
             self.pan_offset -= delta / self.view_scale;
         }
         if !mouse_eaten && any_mouse_btn_down {
             self.mouse_drag_begin = Some(mouse_pos);
         } else {
             self.mouse_drag_begin = None;
+            self.pan_offset -= self.momentum * self.latest_frame_duration.as_secs_f32();
+            self.momentum -=
+                self.momentum * (MOMENTUM_DECAY * self.latest_frame_duration.as_secs_f32()).min(1.);
         }
 
         if !mouse_eaten {
