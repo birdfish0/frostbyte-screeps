@@ -1,6 +1,6 @@
 //! Contains the [Room] struct and its implementation, as well as functions related to rooms.
 
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, bail, ensure};
 use seahash::SeaHasher;
@@ -84,8 +84,21 @@ impl From<u8> for TerrainTile {
 }
 
 impl Room {
+    /// Same as [Room::name_from_pos], but cannot fail. Returns `<Unknown Room at (x, y)>` if `name_from_pos` fails.
+    pub fn name_from_pos_checked<T>(posx: T, posy: T) -> String
+    where
+        T: Into<usize> + Display + Copy,
+    {
+        Self::name_from_pos(posx, posy).unwrap_or(format!("<Unknown Room at ({}, {})>", posx, posy))
+    }
+
     /// Takes the position of a room in the world map and returns its name. i.e. (0, 0) gives "W60N60".
-    pub fn name_from_pos(posx: usize, posy: usize) -> Result<String, Error> {
+    pub fn name_from_pos<T>(posx: T, posy: T) -> Result<String, Error>
+    where
+        T: Into<usize> + Display + Copy,
+    {
+        let posx = posx.into();
+        let posy = posy.into();
         ensure!(
             posx < MAP_SIZE_X,
             "Room X coordinate out of range: {}",
