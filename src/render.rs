@@ -1,15 +1,16 @@
 //! Provides the [RenderState] struct and functions and enums related to the render thread.
 
+use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
 use anyhow::{Error, bail, ensure};
 use crossbeam_channel::{Receiver, Sender};
-use log::{error, info};
+use log::{debug, error, info};
 use macroquad::text::{Font, load_ttf_font};
 use macroquad::{input, prelude::*};
 
 use crate::consts::*;
-use crate::game::room::TerrainTile;
+use crate::game::room::{Room, TerrainTile};
 use crate::utils::mouse::mouse_within;
 use crate::{game::game_state::GameState, utils::recursive_avg::RecursiveAvg};
 
@@ -65,6 +66,13 @@ pub struct RenderState {
     /// `true` if the renderer has modified its [Self::game_state] independently of the server packets, such as when the user makes a change,
     /// in order to reduce visual latency.
     pub predictive_desync: bool,
+    /// An atlas containing images of the terrain of rooms, cached for rendering.
+    pub terrain_atlas: Box<Texture2D>,
+    /// Whether the `terrain_atlas` has been generated or not.
+    ///
+    /// This is set to `true` on the frame that the terrain altas generation thread completes so the UI drawer can render the warning text,
+    /// and the actual population of the [`Self::terrain_atlas`] happens on the next frame.
+    pub terrain_atlas_made: bool,
 }
 
 impl RenderState {
@@ -89,126 +97,148 @@ impl RenderState {
             got_game_state: false,
             already_requested_gamestate: false,
             predictive_desync: false,
+            terrain_atlas: Box::new(Texture2D::empty()),
+            terrain_atlas_made: false,
         }
     }
 
-    /// Draw the terrain of the room located at `(posx, posy)`, shifted by [`Self::pan_offset`] and scaled by [`Self::view_scale`].
-    ///
-    /// This should be called before drawing the contents of the room.
-    pub fn draw_room_terrain(&self, posx: u8, posy: u8, lod: u8) -> Result<(), Error> {
-        let swidth = screen_width();
-        let sheight = screen_height();
-
-        let abs_room_corner = Vec2 {
-            x: posx as f32,
-            y: posy as f32,
-        } * 50.
-            * TILE_SIZE;
-
-        let room_corner = (abs_room_corner + self.pan_offset) * self.view_scale;
-        let room_size = Vec2 {
-            x: 50. * self.view_scale * TILE_SIZE,
-            y: 50. * self.view_scale * TILE_SIZE,
-        };
-
-        if room_corner.x + room_size.x < 0.
-            || room_corner.y + room_size.y < 0.
-            || room_corner.x > swidth
-            || room_corner.y > sheight
-        {
-            return Ok(());
-        }
-
+    pub fn room_terrain_image(
+        rooms: &Vec<Vec<Room>>,
+        posx: usize,
+        posy: usize,
+    ) -> Result<[u8; 50 * 50 * 4], Error> {
         ensure!(
-            posx < MAP_SIZE_X as u8,
+            posx < MAP_SIZE_X,
             "Room X coordinate out of range: {}",
             posx
         );
         ensure!(
-            posy < MAP_SIZE_Y as u8,
+            posy < MAP_SIZE_Y,
             "Room Y coordinate out of range: {}",
             posy
         );
-        let room = self
-            .game_state
-            .rooms
-            .get(posy as usize)
-            .unwrap()
-            .get(posx as usize)
-            .unwrap();
 
-        draw_rectangle(
-            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
-            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            TERRAIN_PLAINS_COLOR,
-        );
-        draw_rectangle(
-            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
-            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
-            1. * TILE_SIZE * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            ROOM_EDGE_COLOR,
-        );
-        draw_rectangle(
-            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
-            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            1. * TILE_SIZE * self.view_scale,
-            ROOM_EDGE_COLOR,
-        );
-        draw_rectangle(
-            (abs_room_corner.x + 49.0 * TILE_SIZE + self.pan_offset.x) * self.view_scale,
-            (abs_room_corner.y + self.pan_offset.y) * self.view_scale,
-            1. * TILE_SIZE * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            ROOM_EDGE_COLOR,
-        );
-        draw_rectangle(
-            (abs_room_corner.x + self.pan_offset.x) * self.view_scale,
-            (abs_room_corner.y + 49.0 * TILE_SIZE + self.pan_offset.y) * self.view_scale,
-            50. * TILE_SIZE * self.view_scale,
-            1. * TILE_SIZE * self.view_scale,
-            ROOM_EDGE_COLOR,
-        );
-
-        let fifty = (50. / (lod as f32)).ceil() as u8;
-        for ry in 0..fifty {
-            for rx in 0..fifty {
-                let terrain = room.get_terrain_at(rx * lod, ry * lod)?;
-                let x = (abs_room_corner.x + (rx * lod) as f32 * TILE_SIZE + self.pan_offset.x)
-                    * self.view_scale;
-                let y = (abs_room_corner.y + (ry * lod) as f32 * TILE_SIZE + self.pan_offset.y)
-                    * self.view_scale;
-                let w_scale = (rx * lod + lod).min(50) - rx * lod;
-                let h_scale = (ry * lod + lod).min(50) - ry * lod;
-                let w = TILE_SIZE * self.view_scale * w_scale as f32;
-                let h = TILE_SIZE * self.view_scale * h_scale as f32;
-                if x > swidth || x + w < 0. || y > sheight || y + h < 0. {
-                    continue;
-                }
-                draw_rectangle(
-                    x,
-                    y,
-                    w,
-                    h,
-                    match terrain {
-                        TerrainTile::Plains => continue,
-                        TerrainTile::Wall => TERRAIN_WALL_COLOR,
-                        TerrainTile::Swamp => TERRAIN_SWAMP_COLOR,
-                        TerrainTile::Void => bail!(
-                            "Unexpected Void tile returned in room at ({}, {}) at position {}, {}",
-                            posx,
-                            posy,
-                            rx,
-                            ry
-                        ),
-                    },
-                );
+        let mut text = [0u8; 50 * 50 * 4];
+        for y in 0..50 {
+            for x in 0..50 {
+                let idx = (x as usize + y as usize * 50) * 4;
+                let room = &rooms[posy][posx];
+                let color = match room.get_terrain_at(x, y)? {
+                    TerrainTile::Plains => Color::from_rgba(0, 0, 0, 0),
+                    TerrainTile::Swamp => TERRAIN_SWAMP_COLOR,
+                    TerrainTile::Wall => TERRAIN_WALL_COLOR,
+                    TerrainTile::Void => bail!(
+                        "Unexpected Void tile in room at ({}, {}) at {}, {}",
+                        posx,
+                        posy,
+                        x,
+                        y
+                    ),
+                };
+                text[idx] = (color.r * 255.) as u8;
+                text[idx + 1] = (color.g * 255.) as u8;
+                text[idx + 2] = (color.b * 255.) as u8;
+                text[idx + 3] = (color.a * 255.) as u8;
             }
         }
-        Ok(())
+        Ok(text)
+    }
+
+    /// Return a value that can be put into [`Self::terrain_atlas`] with room data from [`Self::game_state::rooms`][GameState::rooms].
+    pub fn create_terrain_cache(rooms: Vec<Vec<Room>>) -> Vec<u8> {
+        info!("Caching terrain images");
+        let mut data = vec![0; 50 * MAP_SIZE_X * 50 * MAP_SIZE_Y * 4];
+        for y in 0..MAP_SIZE_Y {
+            for x in 0..MAP_SIZE_X {
+                match Self::room_terrain_image(&rooms, x, y) {
+                    Ok(tex) => {
+                        for row in 0..50 {
+                            data[((row + 50 * y) * (50 * MAP_SIZE_X) + 50 * x) * 4
+                                ..((row + 50 * y) * (50 * MAP_SIZE_X) + 50 * x + 50) * 4]
+                                .copy_from_slice(tex.split_at(row * 50 * 4).1.split_at(50 * 4).0);
+                        }
+                    }
+                    Err(err) => error!(
+                        "Failed drawing terrain image for room at ({}, {}): {}",
+                        x, y, err
+                    ),
+                }
+            }
+        }
+
+        data
+    }
+
+    /// Draw all the terrain, panned and scaled by [`Self::pan_offset`] and [`Self::view_scale`].
+    pub fn draw_terrain(&self) {
+        let x = self.pan_offset.x * self.view_scale;
+        let y = self.pan_offset.y * self.view_scale;
+        let map_size = Vec2 {
+            x: 50. * self.view_scale * TILE_SIZE * MAP_SIZE_X as f32,
+            y: 50. * self.view_scale * TILE_SIZE * MAP_SIZE_Y as f32,
+        };
+        draw_rectangle(x, y, map_size.x, map_size.y, TERRAIN_PLAINS_COLOR);
+        draw_rectangle(
+            x,
+            y,
+            map_size.x,
+            TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            x,
+            map_size.y - TILE_SIZE * self.view_scale + self.pan_offset.y * self.view_scale,
+            map_size.x,
+            TILE_SIZE * self.view_scale,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            x,
+            y,
+            TILE_SIZE * self.view_scale,
+            map_size.y,
+            ROOM_EDGE_COLOR,
+        );
+        draw_rectangle(
+            map_size.x - TILE_SIZE * self.view_scale + self.pan_offset.x * self.view_scale,
+            y,
+            TILE_SIZE * self.view_scale,
+            map_size.y,
+            ROOM_EDGE_COLOR,
+        );
+        for x in 1..MAP_SIZE_X - 2 {
+            draw_rectangle(
+                ((x as f32 * 50. - 1.) * TILE_SIZE + self.pan_offset.x) * self.view_scale,
+                y,
+                TILE_SIZE * self.view_scale * 2.,
+                map_size.y,
+                ROOM_EDGE_COLOR,
+            );
+        }
+        for y in 1..MAP_SIZE_X - 2 {
+            draw_rectangle(
+                x,
+                ((y as f32 * 50. - 1.) * TILE_SIZE + self.pan_offset.y) * self.view_scale,
+                map_size.x,
+                TILE_SIZE * self.view_scale * 2.,
+                ROOM_EDGE_COLOR,
+            );
+        }
+
+        draw_texture_ex(
+            &self.terrain_atlas,
+            x,
+            y,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(map_size),
+                source: None,
+                rotation: 0.,
+                flip_x: false,
+                flip_y: false,
+                pivot: None,
+            },
+        );
     }
 
     /// Draw the UI onto the screen.
@@ -257,6 +287,28 @@ impl RenderState {
         if mouse_within(0.0, 0.0, screen_width(), top_bar_height) {
             *mouse_eaten = true;
         }
+
+        if self.terrain_atlas_made && self.terrain_atlas.height() == 1. {
+            let center = get_text_center(
+                "Creating terrain atlas, this may lag a bit...",
+                Some(&self.font),
+                60,
+                0.5,
+                0.,
+            );
+            draw_text_ex(
+                "Creating terrain atlas, this may lag a bit...",
+                screen_width() / 2. - center.x,
+                screen_height() / 2. - center.y,
+                TextParams {
+                    font_size: 60,
+                    color: ORANGE,
+                    font_scale: 0.5,
+                    font: Some(&self.font),
+                    ..Default::default()
+                },
+            );
+        }
     }
 
     /// Run the main rendering loop. This will call the relevant draw functions to render the game.
@@ -266,6 +318,7 @@ impl RenderState {
         rx_state: Receiver<GameState>,
         #[allow(unused, reason = "will use later")] tx_state_override: Sender<GameState>,
     ) {
+        let mut atlasgen: Option<JoinHandle<Vec<u8>>> = None;
         loop {
             self.latest_frame_duration = self.last_frame_end.elapsed();
             self.frame_durations
@@ -312,18 +365,45 @@ impl RenderState {
                 }
             }
 
+            if atlasgen.is_none()
+                && !self.terrain_atlas_made
+                && self.game_state.rooms[0][0].terrain[0] != 0
+            {
+                debug!("Start atlasgen thread");
+                let rooms = self.game_state.rooms.clone();
+                match thread::Builder::new()
+                    .name("load_terrain_atlas".to_owned())
+                    .spawn(|| Self::create_terrain_cache(rooms))
+                {
+                    Err(err) => error!("Failed to start atlasgen thread: {}", err),
+                    Ok(thrd) => atlasgen = Some(thrd),
+                }
+            } else if let Some(ref thrd) = atlasgen {
+                if thrd.is_finished() {
+                    if self.terrain_atlas_made {
+                        match atlasgen.unwrap().join() {
+                            Err(err) => error!("Atlas generation thread panicked: {:?}", err),
+                            Ok(atlas) => {
+                                debug!("Joining atlasgen thread");
+                                self.terrain_atlas = Box::new(Texture2D::from_rgba8(
+                                    50 * MAP_SIZE_X as u16,
+                                    50 * MAP_SIZE_Y as u16,
+                                    &atlas,
+                                ));
+                                self.terrain_atlas.set_filter(FilterMode::Nearest);
+                            }
+                        };
+                        atlasgen = None;
+                    }
+                    self.terrain_atlas_made = true;
+                }
+            }
+
             let mut mouse_eaten = false;
 
             clear_background(WORLD_BG_COLOR);
 
-            for y in 0..MAP_SIZE_Y {
-                for x in 0..MAP_SIZE_X {
-                    self.draw_room_terrain(x as u8, y as u8, (0.2 / self.view_scale).max(1.) as u8)
-                        .unwrap_or_else(|err| {
-                            error!("Error drawing room: {}", err);
-                        });
-                }
-            }
+            self.draw_terrain();
 
             if !mouse_eaten {
                 let highlight = ((((Vec2::from(mouse_position()) / self.view_scale
