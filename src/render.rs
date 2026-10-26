@@ -79,7 +79,7 @@ pub struct RenderState {
 
 /// Amount the [momentum][RenderState::momentum] of map movement is decayed by every second. (`momentum -= momentum * MOMENTUM_DECAY * frame_delta`)
 /// (multiplied by frame delta)
-const MOMENTUM_DECAY: f32 = 5.;
+const MOMENTUM_DECAY: f32 = 4.;
 
 impl RenderState {
     /// Construct a new [RenderState]. Uses the `assets/CutiveMono-Regular.ttf` font by default.
