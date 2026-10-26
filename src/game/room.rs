@@ -3,6 +3,7 @@
 use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, bail, ensure};
+use rand::Rng;
 use seahash::SeaHasher;
 
 use super::*;
@@ -83,6 +84,17 @@ impl From<u8> for TerrainTile {
     }
 }
 
+/// Minimum distance between two objects spread out using [Room::find_spread_position].
+/// If a position of lesser distance is not possible, the function throws an error.
+const ROOMGEN_MINIMUM_SPREAD_DIST: u8 = 14;
+
+/// Amount that the CDTA of the returned point from [Room::find_spread_position] can deviate from the optimal value.
+///
+/// CDTA: Closest distance to anchor.
+///
+/// The optimal value is multiplied by this value to obtain the minimum allowed CDTA.
+const ROOMGEN_SPREAD_DIST_TOLERANCE: f32 = 0.7;
+
 impl Room {
     /// Same as [Room::name_from_pos], but cannot fail. Returns `<Unknown Room at (x, y)>` if `name_from_pos` fails.
     pub fn name_from_pos_checked<T>(posx: T, posy: T) -> String
@@ -125,6 +137,71 @@ impl Room {
             output += &(posy - MAP_SIZE_Y / 2).to_string();
         }
         Ok(output)
+    }
+
+    /// Generate a position within the room which is spread apart from the provided `anchor` positions.
+    ///
+    /// Uses logic from: <https://github.com/laverdet/xxscreeps/blob/main/packages/xxscreeps/scripts/room-gen.ts#L815>
+    ///
+    /// The `padmin` and `padmax` arguments determine the minimum and maximum X and Y coordinates of the returned position.
+    ///
+    /// ## Errors
+    ///
+    /// Errors if `padmin` or `padmax` exceed the boundaries of the room.
+    ///
+    /// Errors if no position at least [ROOMGEN_MINIMUM_SPREAD_DIST] away from all anchors is found.
+    pub fn find_spread_position<T>(
+        &self,
+        padmin: u8,
+        padmax: u8,
+        anchors: &Vec<RoomPos>,
+        rng: &mut T,
+    ) -> Result<RoomPos, Error>
+    where
+        T: Rng,
+    {
+        let mut best: u8 = 0;
+        let mut eligible = Vec::<(u8, u8)>::new();
+        for x in padmin..padmax {
+            for y in padmin..padmax {
+                if self.get_look_terrain_area_at(x, y).iter().any(|row| {
+                    row.iter()
+                        .any(|t| *t == TerrainTile::Plains || *t == TerrainTile::Swamp)
+                }) {
+                    eligible.push((x, y));
+                    best = best.max(
+                        anchors
+                            .iter()
+                            .map(|anc| anc.get_range_to(x, y))
+                            .max()
+                            .unwrap_or_default(),
+                    );
+                }
+            }
+        }
+        ensure!(
+            best >= ROOMGEN_MINIMUM_SPREAD_DIST,
+            "Could not find position sufficiently far ({} tiles) from anchors {:#?} in room {}.",
+            ROOMGEN_MINIMUM_SPREAD_DIST,
+            anchors,
+            Self::name_from_pos_checked(self.posx, self.posy)
+        );
+        let threshold = ROOMGEN_MINIMUM_SPREAD_DIST
+            .max((best as f32 * ROOMGEN_SPREAD_DIST_TOLERANCE).ceil() as u8);
+
+        let eligible = eligible
+            .iter()
+            .filter(|(x, y)| anchors.iter().all(|a| a.get_range_to(*x, *y) >= threshold))
+            .collect::<Vec<&(u8, u8)>>();
+
+        let chosen = eligible[rng.random_range(0..eligible.len())];
+
+        Ok(RoomPos {
+            room_x: self.posx,
+            room_y: self.posy,
+            pos_x: chosen.0,
+            pos_y: chosen.1,
+        })
     }
 
     /// Get the 9 terrain tiles around the given coordinates in the room.
