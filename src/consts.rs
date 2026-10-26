@@ -2,26 +2,6 @@
 //!
 //! See also: <https://docs.screeps.com/api/#Constants>.
 
-use macroquad::color::Color;
-
-/// Background color for the world, before UI and rooms are drawn.
-pub const WORLD_BG_COLOR: Color = Color::from_hex(0x1b1b1b);
-/// Color for UI elements directly containing text.
-pub const UI_HIGH_BG_COLOR: Color = Color::from_hex(0x444444);
-/// Color for UI elements that act more as background panels.
-pub const UI_LOW_BG_COLOR: Color = Color::from_hex(0x2d2d2d);
-
-/// Color of the plains terrain. Used in [crate::render::RenderState::draw_room_terrain].
-pub const TERRAIN_PLAINS_COLOR: Color = Color::from_hex(0x2b2b2b);
-/// Color of the swamp terrain. Used in [crate::render::RenderState::draw_room_terrain].
-pub const TERRAIN_SWAMP_COLOR: Color = Color::from_hex(0x384425);
-/// Color of the wall terrain. Used in [crate::render::RenderState::draw_room_terrain].
-pub const TERRAIN_WALL_COLOR: Color = Color::from_hex(0x151515);
-/// Color of the terrain at the very edge of rooms.
-pub const ROOM_EDGE_COLOR: Color = Color::from_hex(0x3b3b3b);
-/// Color of the square that will be drawn on top of the hovered tile to highlight it.
-pub const CURSOR_HIGHLIGHT_COLOR: Color = Color::from_rgba(255, 255, 255, 0x41);
-
 /// Chance, in percent, of the mineral density to change when the timer runs out, given it is not of [Low][crate::game::mineral_source::MineralDensity::Low] or [Ultra][crate::game::mineral_source::MineralDensity::Ultra] density.
 pub const MINERAL_DENSITY_CHANGE_CHANCE_PERCENT: u32 = 5;
 
