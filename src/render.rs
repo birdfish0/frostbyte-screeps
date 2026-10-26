@@ -136,9 +136,9 @@ impl RenderState {
                     TerrainTile::Swamp => TERRAIN_SWAMP_COLOR,
                     TerrainTile::Wall => TERRAIN_WALL_COLOR,
                     TerrainTile::Void => bail!(
-                        "Unexpected Void tile in room at ({}, {}) at {}, {}",
-                        posx,
-                        posy,
+                        "Unexpected Void tile in room {} at {}, {}",
+                        Room::name_from_pos(posx, posy)
+                            .unwrap_or(format!("<Unknown Room at {}, {}>", posx, posy)),
                         x,
                         y
                     ),
@@ -167,8 +167,10 @@ impl RenderState {
                         }
                     }
                     Err(err) => error!(
-                        "Failed drawing terrain image for room at ({}, {}): {}",
-                        x, y, err
+                        "Failed drawing terrain image for room {}: {}",
+                        Room::name_from_pos(x, y)
+                            .unwrap_or(format!("<Unknown Room at {}, {}>", x, y)),
+                        err
                     ),
                 }
             }

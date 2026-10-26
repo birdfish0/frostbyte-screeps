@@ -84,6 +84,36 @@ impl From<u8> for TerrainTile {
 }
 
 impl Room {
+    /// Takes the position of a room in the world map and returns its name. i.e. (0, 0) gives "W60N60".
+    pub fn name_from_pos(posx: usize, posy: usize) -> Result<String, Error> {
+        ensure!(
+            posx < MAP_SIZE_X,
+            "Room X coordinate out of range: {}",
+            posx
+        );
+        ensure!(
+            posy < MAP_SIZE_Y,
+            "Room Y coordinate out of range: {}",
+            posy
+        );
+        let mut output = String::new();
+        if posx < MAP_SIZE_X / 2 {
+            output += "W";
+            output += &(MAP_SIZE_X / 2 - 1 - posx).to_string();
+        } else {
+            output += "E";
+            output += &(posx - MAP_SIZE_X / 2).to_string();
+        }
+        if posy < MAP_SIZE_Y / 2 {
+            output += "N";
+            output += &(MAP_SIZE_Y / 2 - 1 - posy).to_string();
+        } else {
+            output += "S";
+            output += &(posy - MAP_SIZE_Y / 2).to_string();
+        }
+        Ok(output)
+    }
+
     /// Get the 9 terrain tiles around the given coordinates in the room.
     ///
     /// If a tile is out of range, [TerrainTile::Void] is returned in its place.
