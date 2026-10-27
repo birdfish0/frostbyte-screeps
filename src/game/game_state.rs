@@ -2,8 +2,8 @@
 
 use std::{collections::VecDeque, time::Instant};
 
-use anyhow::{Error, bail, ensure};
-use log::{debug, error};
+use anyhow::{Context, Error, bail, ensure};
+use log::{debug, error, warn};
 use rand::SeedableRng;
 
 use crate::{
@@ -19,6 +19,7 @@ pub struct GameState {
     pub paused: bool,
     pub tick: u128,
     pub force_tick_delay: u32,
+    pub idgen: u64,
     pub tick_durations: RecursiveAvg,
     pub last_tick_time: Instant,
     pub intents: VecDeque<Intent>,
@@ -54,6 +55,7 @@ impl GameState {
             paused: true,
             tick: 0,
             force_tick_delay: 0,
+            idgen: 1,
             tick_durations: RecursiveAvg::new(vec![256, 32, 32], true).unwrap_or_else(|err| {
                 error!("Failed to create new RecursiveAvg: {}", err);
                 Default::default()
@@ -168,6 +170,137 @@ impl GameState {
             );
 
             self.rooms[posy][posx].terrain_from_string(terrain)?;
+
+            let objs = match room["objects"].as_array() {
+                None => {
+                    bail!(
+                        "Malformed room data on room {}, expected 'objects' key within room data to contain array.",
+                        room_name
+                    );
+                }
+                Some(v) => v,
+            };
+
+            for obj in objs {
+                match match obj["type"].as_str() {
+                    None => {
+                        bail!(
+                            "Malformed room data on room {}, expected index of 'objects' array to contain key 'type' with a str value.",
+                            room_name
+                        );
+                    }
+                    Some(v) => v,
+                } {
+                    "extractor" => {
+                        // TODO
+                    }
+                    "keeperLair" => {
+                        // TODO
+                    }
+                    "deposit" => {
+                        // TODO
+                    }
+                    "source" => {
+                        let x = obj["x"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'source' in 'objects' array to contain key 'x' with a u64 value.", room_name))?;
+                        let y = obj["y"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'source' in 'objects' array to contain key 'y' with a u64 value.", room_name))?;
+                        self.rooms[posy][posx].energy_sources.insert(self.idgen);
+                        self.energy_sources.insert(
+                            self.idgen,
+                            EnergySource {
+                                amount: UNCLAIMED_ROOM_SRC_AMOUNT,
+                                id: self.idgen,
+                                max_amount: UNCLAIMED_ROOM_SRC_AMOUNT,
+                                pos: RoomPos {
+                                    room_x: posx as u8,
+                                    room_y: posy as u8,
+                                    pos_x: x as u8,
+                                    pos_y: y as u8,
+                                },
+                                refresh_timer: 0,
+                            },
+                        );
+                        self.idgen += 1;
+                    }
+                    "controller" => {
+                        let x = obj["x"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'controller' in 'objects' array to contain key 'x' with a u64 value.", room_name))?;
+                        let y = obj["y"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'controller' in 'objects' array to contain key 'y' with a u64 value.", room_name))?;
+                        self.rooms[posy][posx].structures.insert(self.idgen);
+                        self.structures.insert(
+                            self.idgen,
+                            Structure {
+                                id: self.idgen,
+                                structure_type: StructureType::Controller,
+                                pos: RoomPos {
+                                    room_x: posx as u8,
+                                    room_y: posy as u8,
+                                    pos_x: x as u8,
+                                    pos_y: y as u8,
+                                },
+                                hits: 0,
+                                hits_max: 0,
+                            },
+                        );
+                        self.idgen += 1;
+                    }
+                    "mineral" => {
+                        let x = obj["x"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'x' with a u64 value.", room_name))?;
+                        let y = obj["y"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'y' with a u64 value.", room_name))?;
+                        let amount = obj["mineralAmount"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'mineralAmount' with a u64 value.", room_name))?;
+                        let mtype = obj["mineralType"].as_str().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'mineralType' with a str value.", room_name))?;
+                        let mtype = match mtype {
+                            "H" => ResourceType::Hydrogen,
+                            "O" => ResourceType::Oxygen,
+                            "U" => ResourceType::Utrium,
+                            "L" => ResourceType::Lemergium,
+                            "K" => ResourceType::Keanium,
+                            "Z" => ResourceType::Zynthium,
+                            "X" => ResourceType::Catalyst,
+                            "G" => ResourceType::Ghodium,
+                            _ => bail!(
+                                "Malformed room data on room {}, unknown mineral type {}.",
+                                room_name,
+                                mtype
+                            ),
+                        };
+                        let density = obj["density"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'density' with a u64 value.", room_name))?;
+                        let density = match density {
+                            1 => MineralDensity::Low,
+                            2 => MineralDensity::Medium,
+                            3 => MineralDensity::High,
+                            4 => MineralDensity::Ultra,
+                            _ => bail!(
+                                "Malformed room data on room {}, unknown density value {}.",
+                                room_name,
+                                density
+                            ),
+                        };
+                        self.rooms[posy][posx].mineral_source = Some(self.idgen);
+                        self.mineral_sources.insert(
+                            self.idgen,
+                            MineralSource {
+                                id: self.idgen,
+                                mineral_type: mtype,
+                                pos: RoomPos {
+                                    room_x: posx as u8,
+                                    room_y: posy as u8,
+                                    pos_x: x as u8,
+                                    pos_y: y as u8,
+                                },
+                                amount: amount as u32,
+                                refresh_timer: 0,
+                                density,
+                            },
+                        );
+                        self.idgen += 1;
+                    }
+                    some => {
+                        warn!(
+                            "Skipping unknown object of type '{}' in room {}'s data.",
+                            some, room_name
+                        );
+                    }
+                };
+            }
         }
         Ok(())
     }
