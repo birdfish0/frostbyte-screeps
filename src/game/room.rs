@@ -5,7 +5,6 @@ use std::{collections::HashSet, fmt::Display};
 use anyhow::{Error, bail, ensure};
 use log::error;
 use rand::{Rng, rng};
-use seahash::SeaHasher;
 
 use crate::utils::{event_queue::QueuedEvent, hash::SeaHashBuilder, random::random_choice};
 
