@@ -284,8 +284,13 @@ impl Room {
         if let Some(mineral) = mineral {
             let mut avoid = src_positions.clone();
             avoid.push(ctrler_position);
-            let mineral_position =
-                self.find_spread_position(4, 45, &src_positions, rng, Some(&avoid))?;
+            let mineral_position;
+            if src_positions.len() >= 3 {
+                mineral_position =
+                    self.find_spread_position(4, 45, &src_positions, rng, Some(&avoid))?;
+            } else {
+                mineral_position = self.find_spread_position(4, 45, &vec![], rng, Some(&avoid))?;
+            }
             let src = MineralSource {
                 amount: 0,
                 density: random_choice(
