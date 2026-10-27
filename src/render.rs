@@ -10,6 +10,7 @@ use macroquad::text::{Font, load_ttf_font};
 use macroquad::{input, prelude::*};
 
 use crate::consts::*;
+use crate::game::mineral_source::type2str;
 use crate::game::room::{Room, TerrainTile};
 use crate::utils::mouse::mouse_within;
 use crate::{game::game_state::GameState, utils::recursive_avg::RecursiveAvg};
@@ -366,6 +367,40 @@ impl RenderState {
             let size = TILE_SIZE * 0.8 * self.view_scale;
             let negsize = TILE_SIZE * 0.1 * self.view_scale;
             draw_rectangle(x + negsize, y + negsize, size, size, YELLOW);
+        }
+
+        if let Some(srcid) = &room.mineral_source {
+            let src = self
+                .game_state
+                .mineral_sources
+                .get(srcid)
+                .with_context(|| {
+                    format!(
+                        "Nonexistent mineral source with id {} referenced in room {}.",
+                        srcid,
+                        Room::name_from_pos_checked(room.posx, room.posy)
+                    )
+                })?;
+            let x = offx + src.pos.pos_x as f32 * TILE_SIZE * self.view_scale;
+            let y = offy + src.pos.pos_y as f32 * TILE_SIZE * self.view_scale;
+            let size = TILE_SIZE * 0.8 * self.view_scale;
+            let half = TILE_SIZE * 0.5 * self.view_scale;
+            draw_circle(x + half, y + half, size / 2., WHITE);
+            let txt = type2str(src.mineral_type);
+            let centr = get_text_center(txt, Some(&self.font), 32, self.view_scale * 0.5, 0.0);
+            draw_text_ex(
+                txt,
+                x + half - centr.x,
+                y + half - centr.y,
+                TextParams {
+                    font: Some(&self.font),
+                    font_size: 32,
+                    font_scale: self.view_scale * 0.5,
+                    font_scale_aspect: 1.0,
+                    rotation: 0.0,
+                    color: BLACK,
+                },
+            );
         }
 
         Ok(())
