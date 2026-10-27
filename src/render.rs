@@ -3,7 +3,7 @@
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
-use anyhow::{Error, bail, ensure};
+use anyhow::{Context, Error, bail, ensure};
 use crossbeam_channel::{Receiver, Sender};
 use log::{debug, error, info};
 use macroquad::text::{Font, load_ttf_font};
@@ -337,6 +337,40 @@ impl RenderState {
         }
     }
 
+    pub fn is_room_visible(&self, room: &Room) -> bool {
+        let offx = (room.posx as f32 * TILE_SIZE * 50. + self.pan_offset.x) * self.view_scale;
+        let offy = (room.posy as f32 * TILE_SIZE * 50. + self.pan_offset.y) * self.view_scale;
+        let offx2 = offx + 50. * TILE_SIZE * self.view_scale;
+        let offy2 = offy + 50. * TILE_SIZE * self.view_scale;
+        offx2 >= 0. && offy2 >= 0. && offx < screen_width() && offy < screen_height()
+    }
+
+    pub fn draw_srcs(&self, room: &Room) -> Result<(), Error> {
+        if !self.is_room_visible(room) {
+            return Ok(());
+        }
+
+        let offx = ((room.posx as f32) * TILE_SIZE * 50. + self.pan_offset.x) * self.view_scale;
+        let offy = ((room.posy as f32) * TILE_SIZE * 50. + self.pan_offset.y) * self.view_scale;
+
+        for srcid in &room.energy_sources {
+            let src = self.game_state.energy_sources.get(srcid).with_context(|| {
+                format!(
+                    "Nonexistent energy source with id {} referenced in room {}.",
+                    srcid,
+                    Room::name_from_pos_checked(room.posx, room.posy)
+                )
+            })?;
+            let x = offx + src.pos.pos_x as f32 * TILE_SIZE * self.view_scale;
+            let y = offy + src.pos.pos_y as f32 * TILE_SIZE * self.view_scale;
+            let size = TILE_SIZE * 0.8 * self.view_scale;
+            let negsize = TILE_SIZE * 0.1 * self.view_scale;
+            draw_rectangle(x + negsize, y + negsize, size, size, YELLOW);
+        }
+
+        Ok(())
+    }
+
     /// Run the main rendering loop. This will call the relevant draw functions to render the game.
     pub async fn render_loop(
         &mut self,
@@ -430,6 +464,19 @@ impl RenderState {
             clear_background(WORLD_BG_COLOR);
 
             self.draw_terrain();
+
+            for y in 0..MAP_SIZE_Y {
+                for x in 0..MAP_SIZE_X {
+                    let room = &self.game_state.rooms[y][x];
+                    if let Err(err) = self.draw_srcs(room) {
+                        error!(
+                            "Error while drawing sources in room {}: {}",
+                            Room::name_from_pos_checked(room.posx, room.posy),
+                            err
+                        );
+                    }
+                }
+            }
 
             if !mouse_eaten {
                 let highlight = ((((Vec2::from(mouse_position()) / self.view_scale
