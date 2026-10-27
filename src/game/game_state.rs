@@ -251,15 +251,8 @@ impl GameState {
                         let y = obj["y"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'y' with a u64 value.", room_name))?;
                         let amount = obj["mineralAmount"].as_u64().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'mineralAmount' with a u64 value.", room_name))?;
                         let mtype = obj["mineralType"].as_str().with_context(|| format!("Malformed room data on room {}, expected 'mineral' in 'objects' array to contain key 'mineralType' with a str value.", room_name))?;
-                        let mtype = match mtype {
-                            "H" => ResourceType::Hydrogen,
-                            "O" => ResourceType::Oxygen,
-                            "U" => ResourceType::Utrium,
-                            "L" => ResourceType::Lemergium,
-                            "K" => ResourceType::Keanium,
-                            "Z" => ResourceType::Zynthium,
-                            "X" => ResourceType::Catalyst,
-                            "G" => ResourceType::Ghodium,
+                        let mtype = match str2type(mtype) {
+                            Some(x) => x,
                             _ => bail!(
                                 "Malformed room data on room {}, unknown mineral type {}.",
                                 room_name,

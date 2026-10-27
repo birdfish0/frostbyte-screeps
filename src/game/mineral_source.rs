@@ -70,6 +70,34 @@ impl EventCallback for MineralRefreshEvent {
     }
 }
 
+pub fn type2str(t: ResourceType) -> &'static str {
+    match t {
+        ResourceType::Hydrogen => "H",
+        ResourceType::Oxygen => "O",
+        ResourceType::Utrium => "U",
+        ResourceType::Lemergium => "L",
+        ResourceType::Keanium => "K",
+        ResourceType::Zynthium => "Z",
+        ResourceType::Catalyst => "X",
+        ResourceType::Ghodium => "G",
+        _ => "?",
+    }
+}
+
+pub fn str2type(t: &str) -> Option<ResourceType> {
+    match t {
+        "H" => Some(ResourceType::Hydrogen),
+        "O" => Some(ResourceType::Oxygen),
+        "U" => Some(ResourceType::Utrium),
+        "L" => Some(ResourceType::Lemergium),
+        "K" => Some(ResourceType::Keanium),
+        "Z" => Some(ResourceType::Zynthium),
+        "X" => Some(ResourceType::Catalyst),
+        "G" => Some(ResourceType::Ghodium),
+        _ => None,
+    }
+}
+
 impl MineralSource {
     /// Get the starting amount of resources that should be in a source with the given density.
     pub fn density_to_amount(density: MineralDensity) -> u32 {
