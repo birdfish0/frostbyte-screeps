@@ -338,6 +338,7 @@ impl RenderState {
         }
     }
 
+    /// Returns `true` if any part of the given [`Room`] is visible on the screen (not accounting for UI being in the way), and `false` otherwise.
     pub fn is_room_visible(&self, room: &Room) -> bool {
         let offx = (room.posx as f32 * TILE_SIZE * 50. + self.pan_offset.x) * self.view_scale;
         let offy = (room.posy as f32 * TILE_SIZE * 50. + self.pan_offset.y) * self.view_scale;
@@ -346,6 +347,7 @@ impl RenderState {
         offx2 >= 0. && offy2 >= 0. && offx < screen_width() && offy < screen_height()
     }
 
+    /// Draw the mineral, energy and commodity sources within a [Room].
     pub fn draw_srcs(&self, room: &Room) -> Result<(), Error> {
         if !self.is_room_visible(room) {
             return Ok(());
