@@ -8,7 +8,7 @@ use rand::SeedableRng;
 
 use crate::{
     game::*,
-    utils::{hash::SeaHashBuilder, recursive_avg::RecursiveAvg},
+    utils::{event_queue::QueuedEvent, hash::SeaHashBuilder, recursive_avg::RecursiveAvg},
 };
 
 #[derive(Debug, Clone)]
@@ -118,7 +118,11 @@ impl GameState {
     /// ## Arguments
     ///
     /// - `data`: String containing the JSON object to be parsed.
-    pub fn load_rooms_from_json(&mut self, data: &str) -> Result<(), Error> {
+    pub fn load_rooms_from_json(
+        &mut self,
+        data: &str,
+        event_queue: &mut EventQueue,
+    ) -> Result<(), Error> {
         debug!("Loading map data from JSON");
 
         let jsonroot = match serde_json::from_str::<serde_json::Value>(data) {
@@ -223,6 +227,10 @@ impl GameState {
                                 refresh_timer: 0,
                             },
                         );
+                        event_queue.enqueue(QueuedEvent {
+                            callback: Box::new(EnergySourceRefreshEvent { id: self.idgen }),
+                            tick: 0,
+                        });
                         self.idgen += 1;
                     }
                     "controller" => {
@@ -288,6 +296,10 @@ impl GameState {
                                 density,
                             },
                         );
+                        event_queue.enqueue(QueuedEvent {
+                            callback: Box::new(MineralRefreshEvent { id: self.idgen }),
+                            tick: 0,
+                        });
                         self.idgen += 1;
                     }
                     some => {

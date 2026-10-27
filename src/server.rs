@@ -54,7 +54,7 @@ pub fn run_loop(
                                 }
                                 Ok(_) => {
                                     game_state
-                                        .load_rooms_from_json(&data)
+                                        .load_rooms_from_json(&data, &mut event_queue)
                                         .unwrap_or_else(|err| {
                                             error!("Failed to load game data from JSON: {}", err);
                                         });
