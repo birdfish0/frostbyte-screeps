@@ -13,7 +13,7 @@ pub struct EnergySource {
     pub refresh_timer: u128,
 }
 
-pub const ENERGY_SOURCE_REFRESH_TICKS: u128 = 3000;
+pub const ENERGY_SOURCE_REFRESH_TICKS: u128 = 300;
 pub const UNCLAIMED_ROOM_SRC_AMOUNT: u32 = 1500;
 
 pub struct EnergySourceRefreshEvent {
