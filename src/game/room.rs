@@ -3,8 +3,11 @@
 use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, bail, ensure};
+use log::error;
 use rand::Rng;
 use seahash::SeaHasher;
+
+use crate::utils::{event_queue::QueuedEvent, random::random_choice};
 
 use super::*;
 
@@ -156,6 +159,7 @@ impl Room {
         padmax: u8,
         anchors: &Vec<RoomPos>,
         rng: &mut T,
+        avoid: Option<&Vec<RoomPos>>,
     ) -> Result<RoomPos, Error>
     where
         T: Rng,
@@ -164,6 +168,11 @@ impl Room {
         let mut eligible = Vec::<(u8, u8)>::new();
         for x in padmin..padmax {
             for y in padmin..padmax {
+                if let Some(avoid) = avoid {
+                    if avoid.iter().any(|p| p.pos_x == x && p.pos_y == y) {
+                        continue;
+                    }
+                }
                 if self.get_look_terrain_area_at(x, y).iter().any(|row| {
                     row.iter()
                         .any(|t| *t == TerrainTile::Plains || *t == TerrainTile::Swamp)
@@ -202,6 +211,118 @@ impl Room {
             pos_x: chosen.0,
             pos_y: chosen.1,
         })
+    }
+
+    /// Populate the room's mineral source and energy sources from the given options.
+    /// Returns the mineral source if one was requested, controller if requested, and a list of energy sources in the room.
+    ///
+    /// The mineral and energy source refresh events are automatically queued into the provided `event_queue`.
+    pub fn generate<T>(
+        &mut self,
+        rng: &mut T,
+        mineral: Option<ResourceType>,
+        controller: bool,
+        event_queue: &mut EventQueue,
+        id: &mut u64,
+    ) -> Result<
+        (
+            Option<MineralSource>,
+            Option<Structure>,
+            [Option<EnergySource>; 3],
+        ),
+        Error,
+    >
+    where
+        T: Rng,
+    {
+        let mut src_positions = Vec::<RoomPos>::new();
+
+        for _ in 0..rng.random_range(1..2) {
+            src_positions.push(self.find_spread_position(3, 46, &src_positions, rng, None)?);
+        }
+
+        let mut out_srcs: [Option<EnergySource>; 3] = [None; 3];
+
+        let mut i = 0;
+        for pos in &src_positions {
+            let src = EnergySource {
+                id: *id,
+                pos: pos.clone(),
+                amount: UNCLAIMED_ROOM_SRC_AMOUNT,
+                max_amount: UNCLAIMED_ROOM_SRC_AMOUNT,
+                refresh_timer: 0,
+            };
+            out_srcs[i] = Some(src);
+            *id += 1;
+            i += 1;
+
+            event_queue.enqueue(QueuedEvent {
+                tick: ENERGY_SOURCE_REFRESH_TICKS,
+                callback: Box::new(EnergySourceRefreshEvent { id: src.id }),
+            });
+        }
+
+        let ctrler;
+        let ctrler_position;
+        if controller {
+            ctrler_position =
+                self.find_spread_position(5, 44, &vec![], rng, Some(&src_positions))?;
+            ctrler = Some(Structure {
+                hits: 0,
+                hits_max: 0,
+                id: *id,
+                pos: ctrler_position,
+                structure_type: StructureType::Controller,
+            });
+            *id += 1;
+        } else {
+            ctrler = None;
+            ctrler_position = RoomPos::default();
+        }
+
+        let mineralsrc;
+        if let Some(mineral) = mineral {
+            let mut avoid = src_positions.clone();
+            avoid.push(ctrler_position);
+            let mineral_position =
+                self.find_spread_position(4, 45, &src_positions, rng, Some(&avoid))?;
+            let src = MineralSource {
+                amount: 0,
+                density: random_choice(
+                    rng,
+                    &[
+                        MineralDensity::Low,
+                        MineralDensity::Medium,
+                        MineralDensity::High,
+                        MineralDensity::Ultra,
+                    ],
+                    &[
+                        MINERAL_DENSITY_LOW_CHANCE_PER1000,
+                        MINERAL_DENSITY_MEDIUM_CHANCE_PER1000,
+                        MINERAL_DENSITY_HIGH_CHANCE_PER1000,
+                        MINERAL_DENSITY_ULTRA_CHANCE_PER1000,
+                    ],
+                )
+                .unwrap_or_else(|err| {
+                    error!("Failed to generate new mineral density: {}", err);
+                    Default::default()
+                }),
+                id: *id,
+                mineral_type: mineral,
+                pos: mineral_position,
+                refresh_timer: 0,
+            };
+            *id += 1;
+            event_queue.enqueue(QueuedEvent {
+                callback: Box::new(MineralRefreshEvent { id: src.id }),
+                tick: MINERAL_REGEN_TIME as u128,
+            });
+            mineralsrc = Some(src);
+        } else {
+            mineralsrc = None;
+        }
+
+        Ok((mineralsrc, ctrler, out_srcs))
     }
 
     /// Get the 9 terrain tiles around the given coordinates in the room.
