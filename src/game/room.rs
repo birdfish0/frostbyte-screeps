@@ -4,10 +4,10 @@ use std::{collections::HashSet, fmt::Display};
 
 use anyhow::{Error, bail, ensure};
 use log::error;
-use rand::Rng;
+use rand::{Rng, rng};
 use seahash::SeaHasher;
 
-use crate::utils::{event_queue::QueuedEvent, random::random_choice};
+use crate::utils::{event_queue::QueuedEvent, hash::SeaHashBuilder, random::random_choice};
 
 use super::*;
 
@@ -21,7 +21,7 @@ pub struct Room {
     /// Y position of the room in the map, with 0 being the top row.
     pub posy: u8,
     /// IDs of [Creep]s in the room.
-    pub creeps: HashSet<u64, SeaHasher>,
+    pub creeps: HashSet<u64, SeaHashBuilder>,
     /// Terrain of the room, by rows. Each tile is represented by 2 bits,
     /// where `0b00` is plains, `0b01` is wall, `0b10` is swamp.
     ///
@@ -29,21 +29,21 @@ pub struct Room {
     /// and bits 101-200 represent the second row, etc.
     pub terrain: [u8; 625],
     /// IDs of [Structure]s in the room.
-    pub structures: HashSet<u64, SeaHasher>,
+    pub structures: HashSet<u64, SeaHashBuilder>,
     /// IDs of [EnergySource]s in the room.
-    pub energy_sources: HashSet<u64, SeaHasher>,
+    pub energy_sources: HashSet<u64, SeaHashBuilder>,
     /// ID of the [MineralSource] in the room, if there is one.
     pub mineral_source: Option<u64>,
     /// ID of the [CommoditySource] in the room, if there is one.
     pub commodity_source: Option<u64>,
     /// IDs of [ConstructionSite]s in the room.
-    pub construction_sites: HashSet<u64, SeaHasher>,
+    pub construction_sites: HashSet<u64, SeaHashBuilder>,
     /// IDs of [Ruin]s in the room.
-    pub ruins: HashSet<u64, SeaHasher>,
+    pub ruins: HashSet<u64, SeaHashBuilder>,
     /// IDs of [Tombstone]s in the room.
-    pub tombstones: HashSet<u64, SeaHasher>,
+    pub tombstones: HashSet<u64, SeaHashBuilder>,
     /// IDs of [DroppedResource]s in the room.
-    pub dropped_resources: HashSet<u64, SeaHasher>,
+    pub dropped_resources: HashSet<u64, SeaHashBuilder>,
 }
 
 impl Default for Room {
@@ -51,16 +51,16 @@ impl Default for Room {
         Self {
             posx: 0,
             posy: 0,
-            creeps: HashSet::with_hasher(SeaHasher::new()),
+            creeps: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
             terrain: [0; 625],
-            structures: HashSet::with_hasher(SeaHasher::new()),
-            energy_sources: HashSet::with_hasher(SeaHasher::new()),
+            structures: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
+            energy_sources: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
             mineral_source: None,
             commodity_source: None,
-            construction_sites: HashSet::with_hasher(SeaHasher::new()),
-            ruins: HashSet::with_hasher(SeaHasher::new()),
-            tombstones: HashSet::with_hasher(SeaHasher::new()),
-            dropped_resources: HashSet::with_hasher(SeaHasher::new()),
+            construction_sites: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
+            ruins: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
+            tombstones: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
+            dropped_resources: HashSet::with_hasher(SeaHashBuilder::new(&mut rng())),
         }
     }
 }
