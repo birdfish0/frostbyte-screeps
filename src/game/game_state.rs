@@ -43,9 +43,13 @@ impl GameState {
         let mut rooms: Vec<Vec<Room>> = (0..MAP_SIZE_Y)
             .map(|_| Vec::with_capacity(MAP_SIZE_X))
             .collect::<Vec<_>>();
-        for _x in 0..MAP_SIZE_X {
+        for x in 0..MAP_SIZE_X {
             for y in 0..MAP_SIZE_Y {
-                rooms.get_mut(y).unwrap().push(Room::default());
+                rooms.get_mut(y).unwrap().push(Room {
+                    posx: x as u8,
+                    posy: y as u8,
+                    ..Default::default()
+                });
             }
         }
 
