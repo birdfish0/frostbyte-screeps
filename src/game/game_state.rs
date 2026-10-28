@@ -60,7 +60,7 @@ impl GameState {
             tick: 0,
             force_tick_delay: 0,
             idgen: 1,
-            tick_durations: RecursiveAvg::new(vec![256, 32, 32], true).unwrap_or_else(|err| {
+            tick_durations: RecursiveAvg::new(vec![64, 8, 8], true).unwrap_or_else(|err| {
                 error!("Failed to create new RecursiveAvg: {}", err);
                 Default::default()
             }),
