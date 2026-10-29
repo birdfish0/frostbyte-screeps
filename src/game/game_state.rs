@@ -16,6 +16,7 @@ use crate::{
 ///
 /// It contains the actual data for most objects that are referenced by ID elsewhere.
 pub struct GameState {
+    pub prev_paused: bool,
     pub paused: bool,
     pub tick: u128,
     pub force_tick_delay: u32,
@@ -56,6 +57,7 @@ impl GameState {
         let mut rng = SmallRng::seed_from_u64(4);
 
         Self {
+            prev_paused: true,
             paused: true,
             tick: 0,
             force_tick_delay: 0,
@@ -86,7 +88,9 @@ impl GameState {
     pub fn tick(&mut self, event_queue: &mut EventQueue) {
         if !self.paused {
             let tick_duration = self.last_tick_time.elapsed();
-            self.tick_durations.add(tick_duration.as_nanos());
+            if !self.prev_paused {
+                self.tick_durations.add(tick_duration.as_nanos());
+            }
             self.tick += 1;
 
             while let Some(intent) = self.intents.pop_front() {
@@ -96,6 +100,7 @@ impl GameState {
             event_queue.tick(self.tick, self);
             self.last_tick_time = Instant::now();
         }
+        self.prev_paused = self.paused;
     }
 
     /// Process an [Intent] and change the game state accordingly.
