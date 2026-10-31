@@ -88,6 +88,7 @@ impl GameState {
     pub fn tick(&mut self, event_queue: &mut EventQueue) {
         if !self.paused {
             let tick_duration = self.last_tick_time.elapsed();
+            self.last_tick_time = Instant::now();
             if !self.prev_paused {
                 self.tick_durations.add(tick_duration.as_nanos());
             }
@@ -98,7 +99,6 @@ impl GameState {
             }
 
             event_queue.tick(self.tick, self);
-            self.last_tick_time = Instant::now();
         }
         self.prev_paused = self.paused;
     }
